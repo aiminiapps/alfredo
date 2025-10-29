@@ -45,7 +45,7 @@ export default function Hero() {
       style={{ 
         position: 'relative', 
         overflow: 'hidden',
-        backgroundColor: '#060010'
+        backgroundColor: '#0D0A07'
       }}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -68,7 +68,7 @@ export default function Hero() {
       <LaserFlow
         horizontalBeamOffset={0.1}
         verticalBeamOffset={0.0}
-        color="#FF79C6"
+        color="#FF8C00"
       />
       
       <div style={{
@@ -80,7 +80,7 @@ export default function Hero() {
         height: '60%',
         backgroundColor: '#060010',
         borderRadius: '20px',
-        border: '2px solid #FF79C6',
+        border: '2px solid #FF8C00',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
