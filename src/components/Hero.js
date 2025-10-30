@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaWallet, FaEthereum, FaChevronDown, FaRocket } from 'react-icons/fa';
+import { FaEthereum, FaChevronDown } from 'react-icons/fa';
 import { SiSolana, SiBinance, SiPolygon } from 'react-icons/si';
 import { TbHexagonLetterA, TbHexagonLetterB } from 'react-icons/tb';
-import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
+import { HiSparkles } from 'react-icons/hi';
 import Silk from './ui/Silk';
 
 export default function Hero() {
