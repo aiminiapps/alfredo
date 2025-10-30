@@ -620,7 +620,7 @@ Current context: User has ${walletData.statistics.totalTransactions} transaction
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-                        <stat.icon className="text-2xl" style={{ color: stat.color }} />
+                        <stat.icon className="text-2xl text-white" />
                       </div>
                       {stat.change !== undefined && (
                         <div className={`flex items-center gap-1 text-sm font-semibold ${
