@@ -55,57 +55,7 @@ export default function Hero() {
         noiseIntensity={1.5}
         rotation={0}
     />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-t from-[#FF8C00]/40 via-[#FFB347]/20 to-transparent blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute -top-1/2 right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-b from-[#FF6A00]/30 via-[#FF8C00]/10 to-transparent blur-3xl"
-        />
       </div>
-
-      {/* Top Navigation */}
-      <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-6">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
-        >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center">
-            <HiLightningBolt className="text-[#0D0A07] text-xl" />
-          </div>
-          <span className="text-2xl font-bold text-white">ALFREDO</span>
-        </motion.div>
-
-        <motion.button
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="hidden md:flex items-center gap-2 px-6 py-3 rounded-full border border-[#2A1E14] bg-[#1A120C]/50 backdrop-blur-sm text-[#C9C3BD] hover:border-[#FF8C00] hover:text-white transition-all"
-        >
-          <FaWallet className="text-[#FF8C00]" />
-          Connect Wallet
-        </motion.button>
-      </nav>
-
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-4 md:px-6 pb-20">
         {/* Hero Text */}
@@ -134,8 +84,8 @@ export default function Hero() {
             <span className="text-white">Portfolio Analyzer!</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-[#C9C3BD] max-w-2xl mx-auto">
-            Welcome to Alfredo—the ultimate fusion of cutting-edge AI and
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+            Welcome to Alfredo the ultimate fusion of cutting edge AI and
             <br className="hidden md:block" />
             the vibrant, powerful world of crypto analytics!
           </p>
@@ -263,33 +213,6 @@ export default function Hero() {
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Floating Elements */}
-      <motion.div
-        animate={{
-          y: [0, -20, 0],
-          rotate: [0, 5, 0]
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        className="absolute top-1/4 left-10 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#FF8C00]/20 to-[#FFB347]/10 backdrop-blur-sm border border-[#FF8C00]/30 hidden lg:block"
-      />
-      <motion.div
-        animate={{
-          y: [0, 20, 0],
-          rotate: [0, -5, 0]
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1
-        }}
-        className="absolute bottom-1/4 right-10 w-32 h-32 rounded-full bg-gradient-to-br from-[#FF6A00]/20 to-[#FF8C00]/10 backdrop-blur-sm border border-[#FF8C00]/30 hidden lg:block"
-      />
     </div>
   );
 }
