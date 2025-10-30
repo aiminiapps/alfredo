@@ -47,7 +47,7 @@ export default function Hero() {
   return (
     <div className="relative min-h-screen bg-[#0D0A07] overflow-hidden">
       {/* Animated Background Glow */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden opacity-70">
       <Silk
         speed={5}
         scale={1}
@@ -57,7 +57,7 @@ export default function Hero() {
     />
       </div>
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-4 md:px-6 pb-20">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-4 md:px-6 pt-10">
         {/* Hero Text */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -72,10 +72,10 @@ export default function Hero() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A120C] border border-[#2A1E14] mb-6"
           >
             <HiSparkles className="text-[#FFB347] text-xl animate-pulse" />
-            <span className="text-sm font-semibold text-[#FFB347]">AI-POWERED INTELLIGENCE</span>
+            <span className="text-sm font-semibold lowercase first-letter:uppercase text-gray-300">AI POWERED INTELLIGENCE</span>
           </motion.div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-2xl heading md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
             The First{' '}
             <span className="bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent">
               AI Crypto
@@ -84,7 +84,7 @@ export default function Hero() {
             <span className="text-white">Portfolio Analyzer!</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+          <p className="text-base text-balance md:text-xl text-gray-200 max-w-2xl mx-auto">
             Welcome to Alfredo the ultimate fusion of cutting edge AI and
             <br className="hidden md:block" />
             the vibrant, powerful world of crypto analytics!
@@ -167,7 +167,7 @@ export default function Hero() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAnalyze}
                 disabled={isLoading}
-                className="px-8 py-4 bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] rounded-2xl text-[#0D0A07] font-bold text-base shadow-lg shadow-[#FF8C00]/50 hover:shadow-[#FF8C00]/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+                className="px-8 py-4 bg-gradient-to-r cursor-pointer from-[#FF6A00] via-[#FF8C00] to-[#FFB347] rounded-2xl text-[#0D0A07] font-bold text-base shadow-lg shadow-[#FF8C00]/50 hover:shadow-[#FF8C00]/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 {isLoading ? (
                   <>
@@ -196,18 +196,17 @@ export default function Hero() {
             className="flex flex-wrap items-center justify-center gap-3 mt-8"
           >
             {[
-              { icon: '🤖', text: 'AI Analysis' },
-              { icon: '📊', text: 'Multi-Chain' },
-              { icon: '⚡', text: 'Real-Time' },
-              { icon: '🎯', text: 'Risk Score' }
+              { text: 'AI Analysis' },
+              { text: 'Multi-Chain' },
+              { text: 'Real-Time' },
+              { text: 'Risk Score' }
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
                 whileHover={{ scale: 1.05, y: -2 }}
                 className="px-4 py-2 rounded-full bg-[#1A120C]/50 border border-[#2A1E14] backdrop-blur-sm flex items-center gap-2 cursor-default"
               >
-                <span className="text-lg">{feature.icon}</span>
-                <span className="text-[#FFB347] text-sm font-medium">{feature.text}</span>
+                <span className="text-gray-300 text-sm font-medium">{feature.text}</span>
               </motion.div>
             ))}
           </motion.div>
