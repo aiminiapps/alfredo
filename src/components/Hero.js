@@ -1,26 +1,33 @@
 'use client'
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { FaWallet, FaChartLine, FaRobot } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi2';
-import { IoIosArrowForward } from 'react-icons/io';
-import LaserFlow from './ui/LaserFlow';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaWallet, FaEthereum, FaChevronDown, FaRocket } from 'react-icons/fa';
+import { SiSolana, SiBinance, SiPolygon } from 'react-icons/si';
+import { TbHexagonLetterA, TbHexagonLetterB } from 'react-icons/tb';
+import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
+import Silk from './ui/Silk';
 
 export default function Hero() {
-  const revealImgRef = useRef(null);
   const router = useRouter();
   const [walletAddress, setWalletAddress] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState('ethereum');
+  const [selectedNetwork, setSelectedNetwork] = useState({
+    id: 'ethereum',
+    name: 'Ethereum',
+    symbol: 'ETH',
+    icon: FaEthereum,
+    color: '#627EEA'
+  });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const networks = [
-    { id: 'ethereum', name: 'Ethereum', symbol: 'ETH' },
-    { id: 'bsc', name: 'BSC', symbol: 'BSC' },
-    { id: 'solana', name: 'Solana', symbol: 'SOL' },
-    { id: 'polygon', name: 'Polygon', symbol: 'MATIC' },
-    { id: 'arbitrum', name: 'Arbitrum', symbol: 'ARB' },
-    { id: 'base', name: 'Base', symbol: 'BASE' }
+    { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', icon: FaEthereum, color: '#627EEA' },
+    { id: 'bsc', name: 'BNB Smart Chain', symbol: 'BSC', icon: SiBinance, color: '#F3BA2F' },
+    { id: 'solana', name: 'Solana', symbol: 'SOL', icon: SiSolana, color: '#14F195' },
+    { id: 'polygon', name: 'Polygon', symbol: 'MATIC', icon: SiPolygon, color: '#8247E5' },
+    { id: 'arbitrum', name: 'Arbitrum', symbol: 'ARB', icon: TbHexagonLetterA, color: '#28A0F0' },
+    { id: 'base', name: 'Base', symbol: 'BASE', icon: TbHexagonLetterB, color: '#0052FF' }
   ];
 
   const handleAnalyze = () => {
@@ -28,238 +35,260 @@ export default function Hero() {
       alert('Please enter a wallet address');
       return;
     }
-    
     setIsLoading(true);
-    router.push(`/ai?wallet=${encodeURIComponent(walletAddress)}&network=${selectedNetwork}`);
+    router.push(`/ai?wallet=${encodeURIComponent(walletAddress)}&network=${selectedNetwork.id}`);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAnalyze();
-    }
+  const handleNetworkSelect = (network) => {
+    setSelectedNetwork(network);
+    setIsDropdownOpen(false);
   };
 
   return (
-    <div 
-      className='h-screen'
-      style={{ 
-        position: 'relative', 
-        overflow: 'hidden',
-        backgroundColor: '#0D0A07'
-      }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const el = revealImgRef.current;
-        if (el) {
-          el.style.setProperty('--mx', `${x}px`);
-          el.style.setProperty('--my', `${y + rect.height * 0.5}px`);
-        }
-      }}
-      onMouseLeave={() => {
-        const el = revealImgRef.current;
-        if (el) {
-          el.style.setProperty('--mx', '-9999px');
-          el.style.setProperty('--my', '-9999px');
-        }
-      }}
-    >
-      <LaserFlow
-        horizontalBeamOffset={0.1}
-        verticalBeamOffset={0.0}
-        color="#FF8C00"
-      />
-      
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '86%',
-        height: '60%',
-        backgroundColor: '#060010',
-        borderRadius: '20px',
-        border: '2px solid #FF8C00',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        fontSize: '2rem',
-        zIndex: 6,
-        padding: '2rem',
-        overflowY: 'auto'
-      }}>
-        {/* Your content here */}
-        <div style={{ width: '100%', maxWidth: '600px' }}>
-          {/* Header */}
+    <div className="relative min-h-screen bg-[#0D0A07] overflow-hidden">
+      {/* Animated Background Glow */}
+      <div className="absolute inset-0 overflow-hidden">
+      <Silk
+        speed={5}
+        scale={1}
+        color="#FF6A00"
+        noiseIntensity={1.5}
+        rotation={0}
+    />
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-t from-[#FF8C00]/40 via-[#FFB347]/20 to-transparent blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -top-1/2 right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-b from-[#FF6A00]/30 via-[#FF8C00]/10 to-transparent blur-3xl"
+        />
+      </div>
+
+      {/* Top Navigation */}
+      <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
+        >
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center">
+            <HiLightningBolt className="text-[#0D0A07] text-xl" />
+          </div>
+          <span className="text-2xl font-bold text-white">ALFREDO</span>
+        </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="hidden md:flex items-center gap-2 px-6 py-3 rounded-full border border-[#2A1E14] bg-[#1A120C]/50 backdrop-blur-sm text-[#C9C3BD] hover:border-[#FF8C00] hover:text-white transition-all"
+        >
+          <FaWallet className="text-[#FF8C00]" />
+          Connect Wallet
+        </motion.button>
+      </nav>
+
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-4 md:px-6 pb-20">
+        {/* Hero Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12 md:mb-16"
+        >
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ textAlign: 'center', marginBottom: '2rem' }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A120C] border border-[#2A1E14] mb-6"
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <FaRobot style={{ fontSize: '3rem', color: '#FF79C6' }} />
-              <HiSparkles style={{ fontSize: '2rem', color: '#FFB347' }} />
-            </div>
-            <h1 style={{ fontSize: '3rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#FFFFFF' }}>
-              Alfredo
-            </h1>
-            <p style={{ fontSize: '1.1rem', color: '#C9C3BD', marginBottom: '0.5rem' }}>
-              AI-Powered Crypto Portfolio Intelligence
-            </p>
-            <p style={{ fontSize: '0.9rem', color: '#C9C3BD', opacity: 0.7 }}>
-              Enter your wallet address and network to analyze
-            </p>
+            <HiSparkles className="text-[#FFB347] text-xl animate-pulse" />
+            <span className="text-sm font-semibold text-[#FFB347]">AI-POWERED INTELLIGENCE</span>
           </motion.div>
 
-          {/* Wallet Address Input */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            style={{ marginBottom: '1.5rem' }}
-          >
-            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '500', marginBottom: '0.5rem', color: '#FFFFFF' }}>
-              <FaWallet style={{ display: 'inline', marginRight: '0.5rem', color: '#FF79C6' }} />
-              Wallet Address
-            </label>
-            <input
-              type="text"
-              value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="0x... or wallet address"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid #2A1E14',
-                backgroundColor: '#0D0A07',
-                color: '#FFFFFF',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'border-color 0.3s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#FF79C6'}
-              onBlur={(e) => e.target.style.borderColor = '#2A1E14'}
-            />
-          </motion.div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            The First{' '}
+            <span className="bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent">
+              AI Crypto
+            </span>
+            <br />
+            <span className="text-white">Portfolio Analyzer!</span>
+          </h1>
 
-          {/* Network Selector */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            style={{ marginBottom: '2rem' }}
-          >
-            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '500', marginBottom: '0.5rem', color: '#FFFFFF' }}>
-              <FaChartLine style={{ display: 'inline', marginRight: '0.5rem', color: '#FF79C6' }} />
-              Select Network
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-              {networks.map((network) => (
+          <p className="text-lg md:text-xl text-[#C9C3BD] max-w-2xl mx-auto">
+            Welcome to Alfredo—the ultimate fusion of cutting-edge AI and
+            <br className="hidden md:block" />
+            the vibrant, powerful world of crypto analytics!
+          </p>
+        </motion.div>
+
+        {/* Input Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          className="w-full max-w-3xl"
+        >
+          <div className="relative bg-[#1A120C]/80 backdrop-blur-xl rounded-3xl border border-[#2A1E14] p-3 shadow-2xl shadow-[#FF8C00]/20">
+            <div className="flex flex-col md:flex-row gap-3">
+              {/* Wallet Input */}
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
+                  placeholder="Put your wallet address here..."
+                  className="w-full px-6 py-4 bg-[#0D0A07] border-2 border-[#2A1E14] rounded-2xl text-white placeholder-[#C9C3BD]/50 focus:border-[#FF8C00] focus:outline-none focus:ring-4 focus:ring-[#FF8C00]/20 transition-all text-base"
+                />
+              </div>
+
+              {/* Network Dropdown */}
+              <div className="relative md:w-48">
                 <motion.button
-                  key={network.id}
-                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedNetwork(network.id)}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    borderRadius: '12px',
-                    border: selectedNetwork === network.id ? '2px solid #FF79C6' : '1px solid #2A1E14',
-                    backgroundColor: selectedNetwork === network.id ? 'rgba(255, 121, 198, 0.1)' : '#0D0A07',
-                    color: selectedNetwork === network.id ? '#FF79C6' : '#C9C3BD',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s'
-                  }}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full px-4 py-4 bg-[#0D0A07] border-2 border-[#2A1E14] rounded-2xl flex items-center justify-between gap-3 hover:border-[#FF8C00] focus:border-[#FF8C00] focus:outline-none focus:ring-4 focus:ring-[#FF8C00]/20 transition-all"
                 >
-                  {network.name}
+                  <div className="flex items-center gap-2">
+                    <selectedNetwork.icon style={{ color: selectedNetwork.color }} className="text-xl" />
+                    <span className="text-white font-medium text-sm">{selectedNetwork.symbol}</span>
+                  </div>
+                  <motion.div
+                    animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <FaChevronDown className="text-[#FF8C00]" />
+                  </motion.div>
                 </motion.button>
-              ))}
+
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className="absolute top-full mt-2 w-full bg-[#1A120C] border-2 border-[#2A1E14] rounded-2xl overflow-hidden shadow-2xl z-50"
+                    >
+                      {networks.map((network) => (
+                        <motion.button
+                          key={network.id}
+                          whileHover={{ backgroundColor: 'rgba(255, 140, 0, 0.1)' }}
+                          onClick={() => handleNetworkSelect(network)}
+                          className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-[#2A1E14] last:border-b-0 transition-colors"
+                        >
+                          <network.icon style={{ color: network.color }} className="text-xl" />
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm">{network.name}</div>
+                            <div className="text-[#C9C3BD] text-xs">{network.symbol}</div>
+                          </div>
+                          {selectedNetwork.id === network.id && (
+                            <div className="w-2 h-2 rounded-full bg-[#FF8C00] shadow-lg shadow-[#FF8C00]/50" />
+                          )}
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Generate Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAnalyze}
+                disabled={isLoading}
+                className="px-8 py-4 bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] rounded-2xl text-[#0D0A07] font-bold text-base shadow-lg shadow-[#FF8C00]/50 hover:shadow-[#FF8C00]/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                {isLoading ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-[#0D0A07] border-t-transparent rounded-full"
+                    />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <HiSparkles className="text-xl" />
+                    Generate
+                  </>
+                )}
+              </motion.button>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Analyze Button */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleAnalyze}
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              borderRadius: '12px',
-              backgroundColor: '#FF79C6',
-              color: '#060010',
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 20px rgba(255, 121, 198, 0.3)',
-              transition: 'all 0.3s',
-              opacity: isLoading ? 0.7 : 1
-            }}
-          >
-            {isLoading ? 'Analyzing...' : 'Analyze Portfolio'}
-            {!isLoading && <IoIosArrowForward />}
-          </motion.button>
-
-          {/* Feature Pills */}
+          {/* Feature Tags */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem' }}
+            transition={{ delay: 0.8 }}
+            className="flex flex-wrap items-center justify-center gap-3 mt-8"
           >
-            {['AI Analysis', 'P&L Tracking', 'Risk Score', 'Recommendations'].map((feature, idx) => (
-              <div
+            {[
+              { icon: '🤖', text: 'AI Analysis' },
+              { icon: '📊', text: 'Multi-Chain' },
+              { icon: '⚡', text: 'Real-Time' },
+              { icon: '🎯', text: 'Risk Score' }
+            ].map((feature, idx) => (
+              <motion.div
                 key={idx}
-                style={{
-                  padding: '0.4rem 0.8rem',
-                  borderRadius: '20px',
-                  border: '1px solid #2A1E14',
-                  backgroundColor: 'rgba(255, 121, 198, 0.1)',
-                  color: '#FFB347',
-                  fontSize: '0.75rem'
-                }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="px-4 py-2 rounded-full bg-[#1A120C]/50 border border-[#2A1E14] backdrop-blur-sm flex items-center gap-2 cursor-default"
               >
-                {feature}
-              </div>
+                <span className="text-lg">{feature.icon}</span>
+                <span className="text-[#FFB347] text-sm font-medium">{feature.text}</span>
+              </motion.div>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
       </div>
 
-      <img
-        ref={revealImgRef}
-        src="/path/to/image.jpg"
-        alt="Reveal effect"
-        style={{
-          position: 'absolute',
-          width: '100%',
-          top: '-50%',
-          zIndex: 5,
-          mixBlendMode: 'lighten',
-          opacity: 0.3,
-          pointerEvents: 'none',
-          '--mx': '-9999px',
-          '--my': '-9999px',
-          WebkitMaskImage: 'radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,1) 0px, rgba(255,255,255,0.95) 60px, rgba(255,255,255,0.6) 120px, rgba(255,255,255,0.25) 180px, rgba(255,255,255,0) 240px)',
-          maskImage: 'radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,1) 0px, rgba(255,255,255,0.95) 60px, rgba(255,255,255,0.6) 120px, rgba(255,255,255,0.25) 180px, rgba(255,255,255,0) 240px)',
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat'
+      {/* Floating Elements */}
+      <motion.div
+        animate={{
+          y: [0, -20, 0],
+          rotate: [0, 5, 0]
         }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute top-1/4 left-10 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#FF8C00]/20 to-[#FFB347]/10 backdrop-blur-sm border border-[#FF8C00]/30 hidden lg:block"
+      />
+      <motion.div
+        animate={{
+          y: [0, 20, 0],
+          rotate: [0, -5, 0]
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1
+        }}
+        className="absolute bottom-1/4 right-10 w-32 h-32 rounded-full bg-gradient-to-br from-[#FF6A00]/20 to-[#FF8C00]/10 backdrop-blur-sm border border-[#FF8C00]/30 hidden lg:block"
       />
     </div>
   );
