@@ -98,6 +98,7 @@ export default function Hero() {
           transition={{ delay: 0.4, duration: 0.8 }}
           className="w-full max-w-3xl"
         >
+            
           <div className="relative bg-[#1A120C]/80 backdrop-blur-xl rounded-3xl border border-[#2A1E14] p-3 shadow-2xl shadow-[#FF8C00]/20">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Wallet Input */}
@@ -137,7 +138,7 @@ export default function Hero() {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="absolute top-full mt-2 w-full bg-[#1A120C] border-2 border-[#2A1E14] rounded-2xl overflow-hidden shadow-2xl z-50"
+                      className="absolute top-full mt-2 w-full bg-[#1A120C] border-2 border-[#2A1E14] rounded-2xl overflow-hidden shadow-2xl z-40"
                     >
                       {networks.map((network) => (
                         <motion.button
