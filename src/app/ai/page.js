@@ -259,20 +259,6 @@ function AIDashboard() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center relative z-10"
         >
-          <motion.div
-            animate={{
-              rotate: 360,
-              scale: [1, 1.2, 1]
-            }}
-            transition={{
-              rotate: { duration: 3, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity }
-            }}
-            className="text-8xl mb-8 filter drop-shadow-[0_0_40px_rgba(255,122,0,0.8)]"
-          >
-            🦊
-          </motion.div>
-
           <h2 className="text-3xl font-bold text-[#F5F5F7] mb-4">
             Analyzing Your Portfolio
           </h2>
@@ -1869,8 +1855,6 @@ function AIDashboard() {
                 )}
               </div>
             )}
-
-            {/* Due to length limits, I'll add the rest in the next response */}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -2087,13 +2071,6 @@ export default function AIPage() {
       fallback={
         <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center">
           <div className="text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="text-8xl mb-6"
-            >
-              🦊
-            </motion.div>
             <div className="text-[#F5F5F7] text-xl font-bold">Loading Alfredo AI...</div>
           </div>
         </div>
