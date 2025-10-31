@@ -395,13 +395,6 @@ function AIDashboard() {
               </motion.button>
 
               <div className="flex items-center gap-3">
-                <motion.span
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                  className="text-3xl filter drop-shadow-[0_0_20px_rgba(255,122,0,0.6)]"
-                >
-                  🦊
-                </motion.span>
                 <div>
                   <h1 className="text-xl font-bold bg-gradient-to-r from-[#FF7A00] via-[#FFA64D] to-[#FF7A00] bg-clip-text text-transparent">
                     Alfredo AI
@@ -456,11 +449,6 @@ function AIDashboard() {
                 />
                 <FaRobot className="relative z-10" />
                 <span className="hidden sm:inline relative z-10">AI Chat</span>
-                <motion.div
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute top-0 right-0 w-2 h-2 bg-green-400 rounded-full"
-                />
               </motion.button>
             </div>
           </div>
@@ -1909,16 +1897,6 @@ function AIDashboard() {
               {/* Enhanced Chat Header */}
               <div className="flex items-center justify-between p-6 border-b border-[#FF7A00]/20 bg-gradient-to-r from-[#1A1A1C] to-[#1A1A1C]/95">
                 <div className="flex items-center gap-3">
-                  <motion.div
-                    animate={{
-                      rotate: [0, 10, -10, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF7A00] to-[#FFA64D] flex items-center justify-center shadow-lg shadow-[#FF7A00]/50"
-                  >
-                    <FaRobot className="text-[#0B0B0C] text-xl" />
-                  </motion.div>
                   <div>
                     <h3 className="font-bold text-[#F5F5F7] flex items-center gap-2">
                       Alfredo AI
@@ -1945,19 +1923,6 @@ function AIDashboard() {
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-[#0B0B0C]/50">
                 {chatMessages.length === 0 && (
                   <div className="text-center py-12">
-                    <motion.div
-                      animate={{
-                        rotate: [0, 360],
-                        scale: [1, 1.2, 1]
-                      }}
-                      transition={{
-                        rotate: { duration: 4, repeat: Infinity, ease: 'linear' },
-                        scale: { duration: 2, repeat: Infinity }
-                      }}
-                      className="text-7xl mb-6 filter drop-shadow-[0_0_30px_rgba(255,122,0,0.6)]"
-                    >
-                      🦊
-                    </motion.div>
                     <h4 className="text-xl font-bold text-[#F5F5F7] mb-3">
                       Ask Me Anything!
                     </h4>
@@ -2100,10 +2065,10 @@ function AIDashboard() {
                     className="px-6 py-4 bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] text-[#0B0B0C] rounded-xl font-bold hover:shadow-2xl hover:shadow-[#FF7A00]/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group"
                   >
                     <motion.div
-                      animate={isTyping ? { rotate: 360 } : {}}
+                      animate={isTyping ? { rotate: 0 } : {}}
                       transition={{ duration: 1, repeat: isTyping ? Infinity : 0, ease: 'linear' }}
                     >
-                      <FaPaperPlane className="group-hover:translate-x-1 transition-transform" />
+                      <FaPaperPlane />
                     </motion.div>
                   </motion.button>
                 </div>
