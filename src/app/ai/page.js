@@ -637,29 +637,6 @@ function AIDashboard() {
 
             <div className="relative z-10 flex items-center justify-between flex-wrap gap-6">
               <div className="flex items-center gap-6">
-                <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{
-                    rotate: { duration: 20, repeat: Infinity, ease: 'linear' },
-                    scale: { duration: 2, repeat: Infinity }
-                  }}
-                  className="relative"
-                >
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF7A00] to-[#FFA64D] flex items-center justify-center shadow-2xl">
-                    <div className="text-3xl font-bold text-[#0B0B0C]">
-                      {aiInsights.portfolioHealth.overall}
-                    </div>
-                  </div>
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-[#1A1A1C]"
-                  />
-                </motion.div>
-
                 <div>
                   <h3 className="text-2xl font-bold text-[#F5F5F7] mb-2 flex items-center gap-2">
                     <FaBrain className="text-[#FF7A00]" />
@@ -735,7 +712,7 @@ function AIDashboard() {
                 <tab.icon />
                 {tab.label}
                 {tab.badge && (
-                  <span className="absolute -top-1 -right-1 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                  <span className="absolute -top-[1px] -right-1.5 scale-90 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-lg">
                     {tab.badge}
                   </span>
                 )}
