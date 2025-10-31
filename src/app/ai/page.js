@@ -1,278 +1,169 @@
-'use client'
+'use client';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 import {
-  FaArrowLeft, FaWallet, FaChartLine, FaExchangeAlt, FaShieldAlt, FaRobot, FaPaperPlane,
-  FaCheckCircle, FaExclamationTriangle, FaCopy, FaExternalLinkAlt, FaGasPump, FaFileContract,
-  FaHistory, FaClock, FaCoins, FaChartPie, FaFire, FaLightbulb, FaBolt, FaTrophy, FaRocket,
-  FaChartBar, FaLayerGroup, FaGem, FaDownload, FaShare, FaStar, FaGlobe, FaBrain, FaEye,
-  FaExpand, FaCompress, FaFilter, FaSort, FaSearch, FaInfoCircle, FaChevronDown, FaChevronUp
+  FaWallet, FaChartLine, FaRobot, FaPaperPlane, FaCopy,
+  FaExternalLinkAlt, FaChartPie, FaFire, FaLightbulb,
+  FaBolt, FaTrophy, FaRocket, FaChartBar, FaLayerGroup,
+  FaGem, FaDownload, FaShare, FaStar, FaGlobe, FaBrain,
+  FaSpinner, FaCheckCircle, FaExclamationTriangle, FaHistory,
+  FaCoins, FaShieldAlt, FaArrowUp, FaArrowDown, FaHome,
+  FaTimes, FaExpand
 } from 'react-icons/fa';
-import { HiSparkles, HiLightningBolt, HiTrendingUp, HiTrendingDown, HiRefresh } from 'react-icons/hi';
-import { BiPieChartAlt2, BiTargetLock, BiTrendingUp } from 'react-icons/bi';
+import { HiSparkles, HiLightningBolt, HiTrendingUp, HiTrendingDown } from 'react-icons/hi';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Area, AreaChart, RadarChart, Radar, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, ComposedChart, Scatter, ScatterChart, ZAxis, Treemap
+  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  Legend, ResponsiveContainer
 } from 'recharts';
-import { Tab } from '@headlessui/react';
 
-function DashboardContent() {
+function AIDashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const chatEndRef = useRef(null);
-  
+
   const wallet = searchParams.get('wallet');
-  const network = searchParams.get('network');
-  
-  const [isLoading, setIsLoading] = useState(true);
+  const network = searchParams.get('network') || 'ethereum';
+
+  // Redirect if no wallet
+  useEffect(() => {
+    if (!wallet) {
+      router.push('/');
+    }
+  }, [wallet, router]);
+
+  // State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanComplete, setScanComplete] = useState(false);
   const [walletData, setWalletData] = useState(null);
   const [aiInsights, setAiInsights] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({});
-  const [filterMode, setFilterMode] = useState('all');
-  const [sortMode, setSortMode] = useState('value');
-  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (!wallet || !network) {
-      toast.error('Missing wallet address or network');
-      router.push('/');
-      return;
-    }
-    fetchAllData();
-    addWelcomeMessage();
-  }, [wallet, network]);
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  const fetchAllData = async () => {
+  // Scan wallet on mount
+  useEffect(() => {
+    if (wallet && !isScanning && !scanComplete) {
+      scanWallet();
+    }
+  }, [wallet]);
+
+  const scanWallet = async () => {
+    setIsScanning(true);
+    setScanComplete(false);
+
     try {
-      setIsLoading(true);
-      
-      const walletResponse = await fetch('/api/wallet', {
+      toast.loading('Scanning multi-chain wallet...', { id: 'scan' });
+
+      const scanResponse = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet, network })
+        body: JSON.stringify({ wallet, chains: [network] })
       });
-      
-      if (!walletResponse.ok) {
-        throw new Error('Failed to fetch wallet data');
-      }
 
-      const walletResult = await walletResponse.json();
-      
-      if (!walletResult.success) {
-        throw new Error(walletResult.error || 'Unknown error');
-      }
+      if (!scanResponse.ok) throw new Error('Scan failed');
 
-      setWalletData(walletResult.data);
-      toast.success('Wallet data loaded successfully');
+      const scanData = await scanResponse.json();
+      if (!scanData.success) throw new Error(scanData.error);
 
-      await Promise.all([
-        fetchRecommendations(walletResult.data),
-        fetchAIInsights(walletResult.data)
-      ]);
+      setWalletData(scanData);
+      toast.success(`Wallet scanned successfully!`, { id: 'scan' });
 
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error(error.message || 'Failed to load wallet data');
-      setIsLoading(false);
-    }
-  };
+      // Fetch AI insights
+      toast.loading('Generating AI insights...', { id: 'ai' });
 
-  const fetchAIInsights = async (data) => {
-    try {
-      const response = await fetch('/api/ai-insights', {
+      const insightsResponse = await fetch('/api/ai-insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletData: data })
+        body: JSON.stringify({
+          analytics: scanData.analytics,
+          wallet: wallet
+        })
       });
-      
-      const result = await response.json();
-      if (result.success) {
-        setAiInsights(result.insights);
+
+      if (insightsResponse.ok) {
+        const insightsData = await insightsResponse.json();
+        setAiInsights(insightsData);
+        toast.success('AI analysis complete!', { id: 'ai' });
+      } else {
+        console.error('AI insights failed');
+        toast.error('AI insights unavailable', { id: 'ai' });
       }
+
+      setScanComplete(true);
     } catch (error) {
-      console.error('AI Insights Error:', error);
+      console.error('Scan error:', error);
+      toast.error(error.message || 'Failed to scan wallet', { id: 'scan' });
+      router.push('/');
+    } finally {
+      setIsScanning(false);
     }
-  };
-
-  const fetchRecommendations = async (data) => {
-    try {
-      const response = await fetch('/api/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletData: data, riskProfile: data.riskAssessment.level })
-      });
-      
-      const result = await response.json();
-      if (result.success) {
-        setRecommendations(result.recommendations);
-      }
-    } catch (error) {
-      console.error('Recommendations Error:', error);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    toast.loading('Refreshing data...');
-    await fetchAllData();
-    setIsRefreshing(false);
-    toast.dismiss();
-    toast.success('Data refreshed');
-  };
-
-  const addWelcomeMessage = () => {
-    const welcomeMsg = {
-      id: Date.now(),
-      role: 'assistant',
-      content: `🚀 Welcome! I'm Alfredo AI, your advanced crypto portfolio assistant powered by real-time blockchain data and AI intelligence. I've successfully analyzed your ${network} wallet.
-
-I can help you with:
-• Portfolio optimization strategies
-• Risk assessment and management
-• Token analysis and recommendations
-• Market trends and predictions
-• Gas optimization tips
-• DeFi opportunities
-
-What would you like to know about your portfolio?`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setChatMessages([welcomeMsg]);
   };
 
   const sendChatMessage = async () => {
-    if (!userInput.trim() || isTyping || !walletData) return;
-    
+    if (!userInput.trim() || isTyping) return;
+
     const userMessage = {
       id: Date.now(),
       role: 'user',
       content: userInput,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    
+
     setChatMessages(prev => [...prev, userMessage]);
     const currentInput = userInput;
     setUserInput('');
     setIsTyping(true);
 
     try {
-      const contextData = `
-Portfolio Overview:
-- Total Value: $${walletData.portfolio.totalValueUSD}
-- Native Balance: ${walletData.balance.native} ${walletData.balance.symbol} ($${walletData.balance.valueUSD})
-- Total Tokens: ${walletData.portfolio.totalTokens}
-- 24h Change: ${walletData.portfolio.change24h}%
-- Profitable Tokens: ${walletData.portfolio.profitableTokens}/${walletData.portfolio.totalTokens}
-
-Transaction Stats:
-- Total: ${walletData.statistics.totalTransactions}
-- Success Rate: ${walletData.statistics.successRate}%
-- Failed: ${walletData.statistics.failedTransactions}
-- Gas Spent: ${walletData.statistics.totalGasSpent} ${walletData.balance.symbol}
-
-Wallet Info:
-- Age: ${walletData.statistics.walletAge} days
-- Network: ${network}
-- Risk Level: ${walletData.riskAssessment.level} (${walletData.riskAssessment.score}/100)
-
-Top Holdings:
-${walletData.topTokens.slice(0, 5).map((t, i) => `${i + 1}. ${t.name}: $${parseFloat(t.value).toFixed(2)} (${t.percentage}%)`).join('\n')}
-
-${aiInsights ? `
-AI Insights:
-- Portfolio Score: ${aiInsights.portfolioScore}/100
-- Trading Behavior: ${aiInsights.tradingBehavior.type}
-- Diversification: ${aiInsights.diversificationScore.level} (${aiInsights.diversificationScore.score}/100)
-- Activity Pattern: ${aiInsights.activityPattern.pattern}
-` : ''}`;
-
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [
-            {
-              role: "system",
-              content: `You are Alfredo AI, an elite crypto portfolio analyst with deep expertise in blockchain, DeFi, trading strategies, and market analysis.
-
-${contextData}
-
-Your capabilities:
-- Advanced portfolio analysis and optimization
-- Risk assessment and management strategies
-- Token-specific insights and predictions
-- Market timing and trend analysis
-- Gas optimization recommendations
-- DeFi opportunity identification
-- Tax optimization strategies
-- Security best practices
-
-Guidelines:
-- Be conversational yet professional
-- Provide data-driven insights
-- Give actionable recommendations
-- Explain complex concepts clearly
-- Use emojis sparingly for emphasis
-- Reference specific numbers from the data
-- Acknowledge limitations when uncertain
-
-Current context: User has ${walletData.statistics.totalTransactions} transactions, ${walletData.portfolio.totalTokens} tokens worth $${walletData.portfolio.totalValueUSD}`
-            },
-            ...chatMessages.slice(-10).map(msg => ({
+            ...chatMessages.slice(-6).map(msg => ({
               role: msg.role,
               content: msg.content
             })),
-            {
-              role: "user",
-              content: currentInput
-            }
+            { role: 'user', content: currentInput }
           ],
-          model: "gpt-3.5-turbo",
-          temperature: 0.7,
-          max_tokens: 800
+          walletData: walletData
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        const responseContent = data.choices?.[0]?.message?.content || data.response || 
-          `Based on your portfolio analysis, here are some insights: Your portfolio is worth $${walletData.portfolio.totalValueUSD} with ${walletData.portfolio.totalTokens} tokens. Your ${walletData.riskAssessment.level.toLowerCase()} risk profile suggests a ${aiInsights?.tradingBehavior.type || 'balanced'} approach.`;
-        
+        const responseContent = data.reply || 'Error processing request.';
+
         const assistantMessage = {
           id: Date.now() + 1,
           role: 'assistant',
           content: responseContent,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
-        
+
         setChatMessages(prev => [...prev, assistantMessage]);
       } else {
-        throw new Error('Chat API failed');
+        throw new Error('Chat failed');
       }
     } catch (error) {
       console.error('Chat error:', error);
-      
       const fallbackMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: `I've analyzed your portfolio data. You have $${walletData.portfolio.totalValueUSD} across ${walletData.portfolio.totalTokens} tokens with a ${walletData.riskAssessment.level.toLowerCase()} risk level. ${aiInsights ? `Your trading behavior shows you're a ${aiInsights.tradingBehavior.type}. ` : ''}Would you like specific recommendations?`,
+        content: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      
       setChatMessages(prev => [...prev, fallbackMessage]);
     } finally {
       setIsTyping(false);
@@ -281,125 +172,38 @@ Current context: User has ${walletData.statistics.totalTransactions} transaction
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
+    toast.success('Copied!');
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
-  };
+  const COLORS = ['#FF7A00', '#FFA64D', '#FF8C1F', '#FFB366', '#FF9933', '#FFC080', '#FFAA4D', '#FFD4A6'];
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  if (!wallet) return null;
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const exportData = () => {
-    const dataStr = JSON.stringify(walletData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `alfredo-wallet-${wallet.slice(0, 8)}-${Date.now()}.json`;
-    link.click();
-    toast.success('Data exported successfully');
-  };
-
-  const getFilteredTokens = () => {
-    if (!walletData) return [];
-    
-    let filtered = [...walletData.tokens];
-    
-    if (searchQuery) {
-      filtered = filtered.filter(t => 
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (filterMode === 'profitable') {
-      filtered = filtered.filter(t => t.percentChange24h > 0);
-    } else if (filterMode === 'losing') {
-      filtered = filtered.filter(t => t.percentChange24h < 0);
-    }
-
-    if (sortMode === 'value') {
-      filtered.sort((a, b) => b.valueUSD - a.valueUSD);
-    } else if (sortMode === 'change') {
-      filtered.sort((a, b) => b.percentChange24h - a.percentChange24h);
-    } else if (sortMode === 'balance') {
-      filtered.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
-    }
-
-    return filtered;
-  };
-
-  if (isLoading) {
+  if (isScanning && !scanComplete) {
     return (
-      <div className="min-h-screen bg-[#0D0A07] flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#FF8C00]/20 blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[#FFB347]/20 blur-3xl"
-          />
-        </div>
-        
-        <motion.div className="relative z-10 text-center">
+      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-24 h-24 border-4 border-[#FF8C00] border-t-transparent rounded-full mx-auto mb-8"
-          />
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="text-6xl mb-6"
           >
-            <p className="text-white text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <HiSparkles className="text-[#FF8C00]" />
-              Analyzing Your Wallet
-            </p>
-            <p className="text-[#C9C3BD] text-sm">Fetching real-time data from {network} blockchain...</p>
+            🦊
           </motion.div>
-          
-          <div className="mt-8 space-y-2">
-            {['Scanning transactions', 'Analyzing tokens', 'Calculating metrics', 'Generating AI insights'].map((text, idx) => (
+          <h2 className="text-2xl font-bold text-[#F5F5F7] mb-4">Analyzing Your Wallet...</h2>
+          <p className="text-[#A9A9B1]">Scanning multiple chains and generating insights</p>
+          <div className="mt-6 flex justify-center gap-2">
+            {[0, 1, 2].map((i) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.3 }}
-                className="text-[#C9C3BD] text-sm flex items-center justify-center gap-2"
-              >
-                <div className="w-2 h-2 rounded-full bg-[#FF8C00] animate-pulse" />
-                {text}
-              </motion.div>
+                key={i}
+                className="w-3 h-3 bg-[#FF7A00] rounded-full"
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+              />
             ))}
           </div>
         </motion.div>
@@ -407,1123 +211,870 @@ Current context: User has ${walletData.statistics.totalTransactions} transaction
     );
   }
 
-  if (!walletData) {
-    return (
-      <div className="min-h-screen bg-[#0D0A07] flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md bg-[#1A120C] rounded-2xl border border-[#2A1E14] p-8"
-        >
-          <div className="w-20 h-20 rounded-full bg-[#FF453A]/10 flex items-center justify-center mx-auto mb-6">
-            <FaExclamationTriangle className="text-[#FF453A] text-4xl" />
-          </div>
-          <h2 className="text-white text-2xl font-bold mb-3">Failed to Load Wallet Data</h2>
-          <p className="text-[#C9C3BD] mb-6">Please check your API configuration and try again</p>
-          <div className="flex gap-3 justify-center">
-            <button 
-              onClick={() => router.push('/')}
-              className="px-6 py-3 bg-[#0D0A07] border border-[#2A1E14] rounded-xl text-white font-medium hover:border-[#FF8C00] transition-all"
-            >
-              Go Back
-            </button>
-            <button 
-              onClick={fetchAllData}
-              className="px-6 py-3 bg-gradient-to-r from-[#FF6A00] to-[#FF8C00] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#FF8C00]/50 transition-all"
-            >
-              Retry
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+  if (!scanComplete || !walletData) return null;
 
-  const COLORS = ['#FF6A00', '#FF8C00', '#FFB347', '#FFA733', '#FF9500', '#FFC966', '#FFD699'];
+  const analytics = walletData.analytics;
 
-  const portfolioDistribution = walletData.topTokens.map((token, idx) => ({
-    name: token.name,
-    value: parseFloat(token.value),
-    percentage: parseFloat(token.percentage),
-    fill: COLORS[idx % COLORS.length]
+  // Chart data
+  const chainDistributionData = analytics.chainDistribution.map(chain => ({
+    name: chain.chain,
+    value: chain.value,
+    percentage: parseFloat(chain.percentage)
   }));
 
-  const riskMetrics = [
-    { metric: 'Diversification', score: Math.min((walletData.tokens.length / 10) * 100, 100) },
-    { metric: 'Activity', score: Math.min((walletData.statistics.totalTransactions / 100) * 100, 100) },
-    { metric: 'Success Rate', score: parseFloat(walletData.statistics.successRate) },
-    { metric: 'Liquidity', score: parseFloat(walletData.balance.valueUSD) > 1000 ? 85 : 50 },
-    { metric: 'Wallet Age', score: Math.min((walletData.statistics.walletAge / 365) * 100, 100) }
-  ];
+  const topHoldingsData = analytics.topHoldings.slice(0, 8).map(token => ({
+    name: token.symbol,
+    value: token.valueUSD
+  }));
+
+  const pnlData = Object.values(analytics.pnlData).slice(0, 10).map(token => ({
+    name: token.symbol,
+    pnl: token.totalPnL,
+    profit: token.totalPnL >= 0 ? token.totalPnL : 0,
+    loss: token.totalPnL < 0 ? Math.abs(token.totalPnL) : 0
+  }));
 
   return (
-    <div className="min-h-screen bg-[#0D0A07]">
+    <div className="min-h-screen bg-[#0B0B0C]">
       <Toaster position="top-right" theme="dark" />
-      
-      {/* Premium Animated Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-2xl bg-[#1A120C]/95 border-b border-[#2A1E14] shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FF8C00]/5 to-transparent pointer-events-none" />
-        <div className="max-w-[1920px] mx-auto px-4 md:px-8 py-4 relative">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+
+      {/* Header */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="sticky top-0 z-50 bg-[#1A1A1C]/80 backdrop-blur-xl border-b border-[#FF7A00]/10"
+      >
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.05, rotate: -5 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => router.push('/')}
-                className="p-3 rounded-xl bg-gradient-to-br from-[#0D0A07] to-[#1A120C] border border-[#2A1E14] text-[#C9C3BD] hover:text-white hover:border-[#FF8C00] transition-all shadow-lg group"
+                className="p-2 rounded-lg bg-[#0B0B0C] hover:bg-[#FF7A00]/20 border border-[#FF7A00]/20 hover:border-[#FF7A00] transition-all"
               >
-                <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-              </motion.button>
-              
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-white via-[#FFB347] to-[#FF8C00] bg-clip-text text-transparent flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <HiSparkles className="text-[#FF8C00]" />
-                  </motion.div>
-                  Advanced Portfolio Intelligence
-                </h1>
-                <div className="flex items-center gap-3 text-sm text-[#C9C3BD] mt-1">
-                  <div className="flex items-center gap-2 bg-[#0D0A07] px-3 py-1 rounded-full border border-[#2A1E14]">
-                    <span className="font-mono text-xs">
-                      {wallet?.slice(0, 6)}...{wallet?.slice(-4)}
-                    </span>
-                    <button 
-                      onClick={() => copyToClipboard(wallet)} 
-                      className="hover:text-[#FF8C00] transition-colors"
-                    >
-                      <FaCopy className="text-xs" />
-                    </button>
-                  </div>
-                  <a 
-                    href={`https://${network === 'ethereum' ? '' : network + '.'}etherscan.io/address/${wallet}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg hover:bg-[#0D0A07] hover:text-[#FF8C00] transition-all"
-                  >
-                    <FaExternalLinkAlt className="text-xs" />
-                  </a>
+                <FaHome className="text-[#FF7A00]" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🦊</span>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] bg-clip-text text-transparent">
+                    Alfredo AI
+                  </h1>
+                  <p className="text-xs text-[#A9A9B1]">Portfolio Intelligence</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="p-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-[#C9C3BD] hover:text-white hover:border-[#FF8C00] transition-all disabled:opacity-50"
-              >
-                <motion.div
-                  animate={isRefreshing ? { rotate: 360 } : {}}
-                  transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 bg-[#0B0B0C] px-3 py-2 rounded-lg border border-[#FF7A00]/20">
+                <FaWallet className="text-[#FF7A00] text-sm" />
+                <span className="text-[#F5F5F7] text-sm font-mono">
+                  {wallet.slice(0, 6)}...{wallet.slice(-4)}
+                </span>
+                <button
+                  onClick={() => copyToClipboard(wallet)}
+                  className="p-1 hover:bg-[#FF7A00]/20 rounded transition-colors"
                 >
-                  <HiRefresh />
-                </motion.div>
-              </motion.button>
-
-              <div className="px-4 py-2 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                <span className="text-[#C9C3BD] text-xs uppercase tracking-wide">Network</span>
-                <p className="text-white font-bold capitalize text-sm">{network}</p>
-              </div>
-
-              <div className={`px-4 py-2 rounded-xl border ${
-                walletData.riskAssessment.level === 'Low' ? 'bg-[#4CD964]/10 border-[#4CD964]/30' :
-                walletData.riskAssessment.level === 'Medium' ? 'bg-[#FFB347]/10 border-[#FFB347]/30' :
-                'bg-[#FF453A]/10 border-[#FF453A]/30'
-              }`}>
-                <span className="text-xs uppercase tracking-wide opacity-80">Risk</span>
-                <p className={`font-bold text-sm ${
-                  walletData.riskAssessment.level === 'Low' ? 'text-[#4CD964]' :
-                  walletData.riskAssessment.level === 'Medium' ? 'text-[#FFB347]' : 'text-[#FF453A]'
-                }`}>
-                  {walletData.riskAssessment.level}
-                </p>
-              </div>
-
-              <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF6A00] to-[#FF8C00] shadow-lg shadow-[#FF8C00]/30">
-                <span className="text-white/80 text-xs uppercase tracking-wide">Total Value</span>
-                <p className="text-white font-bold text-sm">{formatCurrency(walletData.portfolio.totalValueUSD)}</p>
+                  <FaCopy className="text-[#A9A9B1] text-xs" />
+                </button>
               </div>
 
               <button
-                onClick={exportData}
-                className="p-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-[#C9C3BD] hover:text-white hover:border-[#FF8C00] transition-all"
+                onClick={() => setShowChat(!showChat)}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] text-[#0B0B0C] rounded-lg font-semibold hover:shadow-lg hover:shadow-[#FF7A00]/50 transition-all"
               >
-                <FaDownload />
+                <FaRobot />
+                <span className="hidden sm:inline">AI Chat</span>
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.header>
 
       {/* Main Content */}
-      <div className="max-w-[1920px] mx-auto px-4 md:px-8 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          
-          {/* Main Dashboard - 3 columns */}
-          <div className="xl:col-span-3 space-y-6">
-            
-            {/* Hero Stats with Advanced Animations */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                {
-                  icon: FaWallet,
-                  label: 'Total Value',
-                  value: formatCurrency(walletData.portfolio.totalValueUSD),
-                  change: walletData.portfolio.change24h,
-                  color: '#FF8C00',
-                  gradient: 'from-[#FF6A00] to-[#FF8C00]'
-                },
-                {
-                  icon: FaCoins,
-                  label: 'Active Tokens',
-                  value: walletData.portfolio.totalTokens,
-                  subtitle: `${walletData.portfolio.profitableTokens} profitable`,
-                  color: '#4CD964',
-                  gradient: 'from-[#4CD964] to-[#34C759]'
-                },
-                {
-                  icon: FaExchangeAlt,
-                  label: 'Transactions',
-                  value: walletData.statistics.totalTransactions,
-                  subtitle: `${walletData.statistics.successRate}% success`,
-                  color: '#FFB347',
-                  gradient: 'from-[#FFB347] to-[#FFA733]'
-                },
-                {
-                  icon: FaShieldAlt,
-                  label: 'Risk Score',
-                  value: walletData.riskAssessment.score,
-                  subtitle: walletData.riskAssessment.level,
-                  color: walletData.riskAssessment.level === 'Low' ? '#4CD964' : 
-                         walletData.riskAssessment.level === 'Medium' ? '#FFB347' : '#FF453A',
-                  gradient: walletData.riskAssessment.level === 'Low' ? 'from-[#4CD964] to-[#34C759]' :
-                           walletData.riskAssessment.level === 'Medium' ? 'from-[#FFB347] to-[#FFA733]' : 'from-[#FF453A] to-[#FF3B30]'
-                }
-              ].map((stat, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="relative bg-gradient-to-br from-[#1A120C] via-[#1A120C] to-[#0D0A07] rounded-2xl border border-[#2A1E14] p-6 overflow-hidden group cursor-pointer"
+      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          {[
+            {
+              icon: FaWallet,
+              label: 'Total Value',
+              value: `$${analytics.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              change: analytics.totalPnL,
+              isPrimary: true
+            },
+            {
+              icon: FaGlobe,
+              label: 'Active Chains',
+              value: analytics.activeChains,
+              subtext: `${analytics.totalTokens} tokens`,
+              isPrimary: false
+            },
+            {
+              icon: FaChartPie,
+              label: 'Diversification',
+              value: `${analytics.diversificationScore}/100`,
+              progress: analytics.diversificationScore,
+              isPrimary: false
+            },
+            {
+              icon: FaShieldAlt,
+              label: 'Risk Score',
+              value: `${analytics.riskScore}/100`,
+              badge: analytics.riskScore > 70 ? 'Low Risk' : analytics.riskScore > 40 ? 'Moderate' : 'High Risk',
+              badgeColor: analytics.riskScore > 70 ? 'green' : analytics.riskScore > 40 ? 'yellow' : 'red',
+              isPrimary: false
+            }
+          ].map((stat, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ y: -4, scale: 1.02 }}
+              className={`${
+                stat.isPrimary
+                  ? 'bg-gradient-to-br from-[#FF7A00]/20 to-[#FFA64D]/10 border-[#FF7A00]/30'
+                  : 'bg-[#1A1A1C] border-[#FF7A00]/10'
+              } border rounded-2xl p-6 hover:border-[#FF7A00]/40 transition-all duration-300`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <stat.icon className="text-[#FF7A00] text-2xl" />
+                <span className="text-[#A9A9B1] text-sm font-medium">{stat.label}</span>
+              </div>
+
+              <div className="text-3xl font-bold text-[#F5F5F7] mb-2">{stat.value}</div>
+
+              {stat.change !== undefined && (
+                <div className={`flex items-center gap-1 text-sm font-semibold ${stat.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stat.change >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                  ${Math.abs(stat.change).toFixed(2)} PnL
+                </div>
+              )}
+
+              {stat.subtext && <div className="text-[#A9A9B1] text-sm">{stat.subtext}</div>}
+
+              {stat.progress !== undefined && (
+                <div className="w-full bg-[#0B0B0C] rounded-full h-2 mt-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stat.progress}%` }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] h-2 rounded-full"
+                  />
+                </div>
+              )}
+
+              {stat.badge && (
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${
+                    stat.badgeColor === 'green'
+                      ? 'bg-green-500/10 text-green-500'
+                      : stat.badgeColor === 'yellow'
+                      ? 'bg-yellow-500/10 text-yellow-500'
+                      : 'bg-red-500/10 text-red-500'
+                  }`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF8C00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-[#FF8C00]/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500" />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-                        <stat.icon className="text-2xl text-white" />
-                      </div>
-                      {stat.change !== undefined && (
-                        <div className={`flex items-center gap-1 text-sm font-semibold ${
-                          parseFloat(stat.change) >= 0 ? 'text-[#4CD964]' : 'text-[#FF453A]'
-                        }`}>
-                          {parseFloat(stat.change) >= 0 ? <HiTrendingUp /> : <HiTrendingDown />}
-                          {Math.abs(parseFloat(stat.change)).toFixed(2)}%
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[#C9C3BD] text-xs uppercase tracking-wider mb-2">{stat.label}</p>
-                    <h3 className="text-3xl font-bold bg-gradient-to-r from-white to-[#FFB347] bg-clip-text text-transparent mb-1">
-                      {stat.value}
-                    </h3>
-                    {stat.subtitle && (
-                      <p className="text-[#C9C3BD] text-xs">{stat.subtitle}</p>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  {stat.badge}
+                </span>
+              )}
+            </motion.div>
+          ))}
+        </div>
 
-            {/* AI Insights Section */}
-            {aiInsights && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-[#1A120C] to-[#0D0A07] rounded-2xl border-2 border-[#FF8C00]/30 p-6 shadow-2xl shadow-[#FF8C00]/10"
+        {/* Tabs */}
+        <div className="mb-6 overflow-x-auto">
+          <div className="flex gap-2 border-b border-[#FF7A00]/10 min-w-max">
+            {['overview', 'holdings', 'chains', 'pnl', 'insights'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 font-semibold capitalize transition-all relative ${
+                  activeTab === tab
+                    ? 'text-[#FF7A00]'
+                    : 'text-[#A9A9B1] hover:text-[#F5F5F7]'
+                }`}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-[#FFB347] bg-clip-text text-transparent flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-[#FF8C00]/10">
-                      <FaBrain className="text-[#FF8C00] text-2xl" />
-                    </div>
-                    AI-Powered Intelligence
-                  </h2>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#4CD964]/10 border border-[#4CD964]/30">
-                    <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="w-2 h-2 rounded-full bg-[#4CD964]"
-                    />
-                    <span className="text-[#4CD964] text-sm font-medium">Live Analysis</span>
+                {tab}
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF7A00] to-[#FFA64D]"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Chain Distribution Chart */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaLayerGroup className="text-[#FF7A00]" />
+                    Chain Distribution
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={chainDistributionData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percentage }) => `${name} ${percentage}%`}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {chainDistributionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1A1A1C',
+                          border: '1px solid #FF7A00',
+                          borderRadius: '8px',
+                          color: '#F5F5F7'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <div className="mt-6 space-y-3">
+                    {analytics.chainDistribution.map((chain, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                          />
+                          <span className="text-[#F5F5F7] text-sm">{chain.chain}</span>
+                        </div>
+                        <span className="text-[#FF7A00] font-semibold text-sm">
+                          ${chain.value.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                    <p className="text-[#C9C3BD] text-xs mb-2">Portfolio Score</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-3xl font-bold text-white">{aiInsights.portfolioScore}</p>
-                      <p className="text-[#C9C3BD] text-sm">/100</p>
-                    </div>
+                {/* Top Holdings Chart */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaTrophy className="text-[#FF7A00]" />
+                    Top Holdings
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={topHoldingsData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#FF7A00" opacity={0.1} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="#A9A9B1"
+                        tick={{ fill: '#A9A9B1', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="#A9A9B1"
+                        tick={{ fill: '#A9A9B1', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1A1A1C',
+                          border: '1px solid #FF7A00',
+                          borderRadius: '8px',
+                          color: '#F5F5F7'
+                        }}
+                        formatter={(value) => [`$${value.toFixed(2)}`, 'Value']}
+                      />
+                      <Bar dataKey="value" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
+                      <defs>
+                        <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FF7A00" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#FFA64D" stopOpacity={0.8} />
+                        </linearGradient>
+                      </defs>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* PnL Summary */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaChartLine className="text-[#FF7A00]" />
+                    Profit & Loss
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: 'Total PnL', value: analytics.totalPnL, isTotal: true },
+                      { label: 'Realized', value: analytics.totalRealizedPnL },
+                      { label: 'Unrealized', value: analytics.totalUnrealizedPnL },
+                      { label: 'Win Rate', value: `${analytics.winRate}%`, isPercent: true }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-[#0B0B0C] rounded-xl p-4">
+                        <div className="text-[#A9A9B1] text-xs mb-2">{item.label}</div>
+                        <div
+                          className={`text-xl font-bold ${
+                            item.isPercent
+                              ? 'text-[#F5F5F7]'
+                              : item.value >= 0
+                              ? 'text-green-500'
+                              : 'text-red-500'
+                          }`}
+                        >
+                          {item.isPercent ? item.value : `${item.value >= 0 ? '+' : ''}$${item.value.toFixed(2)}`}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                    <p className="text-[#C9C3BD] text-xs mb-2">Trading Type</p>
-                    <p className="text-white font-bold text-sm">{aiInsights.tradingBehavior.type}</p>
-                    <p className="text-[#C9C3BD] text-xs mt-1">{aiInsights.tradingBehavior.description}</p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                    <p className="text-[#C9C3BD] text-xs mb-2">Diversification</p>
-                    <p className="text-white font-bold text-lg">{aiInsights.diversificationScore.level}</p>
-                    <p className="text-[#FFB347] text-xs mt-1">{aiInsights.diversificationScore.score}/100</p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                    <p className="text-[#C9C3BD] text-xs mb-2">Activity Pattern</p>
-                    <p className="text-white font-bold text-sm">{aiInsights.activityPattern.pattern}</p>
-                    <p className="text-[#C9C3BD] text-xs mt-1">{aiInsights.activityPattern.last7Days} txs (7d)</p>
+                  <div className="mt-6">
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={pnlData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#FF7A00" opacity={0.1} />
+                        <XAxis
+                          dataKey="name"
+                          stroke="#A9A9B1"
+                          tick={{ fill: '#A9A9B1', fontSize: 10 }}
+                        />
+                        <YAxis stroke="#A9A9B1" tick={{ fill: '#A9A9B1', fontSize: 10 }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#1A1A1C',
+                            border: '1px solid #FF7A00',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Bar dataKey="profit" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="loss" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 
-                {aiInsights.recommendations && aiInsights.recommendations.length > 0 && (
-                  <div>
-                    <h3 className="text-white font-bold mb-3 flex items-center gap-2">
-                      <FaLightbulb className="text-[#FFB347]" />
-                      Smart Recommendations
-                    </h3>
-                    <div className="space-y-3">
-                      {aiInsights.recommendations.map((rec, idx) => (
-                        <motion.div
+                {/* Trading Profile */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaBolt className="text-[#FF7A00]" />
+                    Trading Profile
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: 'Type', value: analytics.tradingType },
+                      { label: 'Wallet Age', value: `${analytics.walletAge}d` },
+                      { label: 'Total Tx', value: analytics.totalTransactions },
+                      { label: 'Avg Tx/Day', value: analytics.avgTransactionsPerDay }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-[#0B0B0C] rounded-xl p-4">
+                        <div className="text-[#A9A9B1] text-xs mb-2">{item.label}</div>
+                        <div className="text-lg font-bold text-[#F5F5F7]">{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'holdings' && (
+              <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#0B0B0C] border-b border-[#FF7A00]/10">
+                      <tr>
+                        <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">#</th>
+                        <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Token</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Balance</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Value</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">24h</th>
+                        <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Chain</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.topHoldings.map((token, idx) => (
+                        <motion.tr
                           key={idx}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.1 }}
-                          className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14] hover:border-[#FF8C00]/50 transition-all"
+                          transition={{ delay: idx * 0.05 }}
+                          className="border-b border-[#FF7A00]/5 hover:bg-[#FF7A00]/5 transition-colors"
                         >
-                          <div className="flex items-start gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              rec.priority === 'High' ? 'bg-[#FF453A]/10' :
-                              rec.priority === 'Medium' ? 'bg-[#FFB347]/10' : 'bg-[#4CD964]/10'
-                            }`}>
-                              <FaInfoCircle className={
-                                rec.priority === 'High' ? 'text-[#FF453A]' :
-                                rec.priority === 'Medium' ? 'text-[#FFB347]' : 'text-[#4CD964]'
-                              } />
+                          <td className="px-6 py-4">
+                            <div className="w-8 h-8 rounded-lg bg-[#FF7A00]/10 flex items-center justify-center text-[#FF7A00] font-bold text-sm">
+                              {idx + 1}
                             </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <p className="text-white font-semibold">{rec.type}</p>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  rec.priority === 'High' ? 'bg-[#FF453A]/10 text-[#FF453A]' :
-                                  rec.priority === 'Medium' ? 'bg-[#FFB347]/10 text-[#FFB347]' :
-                                  'bg-[#4CD964]/10 text-[#4CD964]'
-                                }`}>
-                                  {rec.priority} Priority
-                                </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {token.logo && (
+                                <img
+                                  src={token.logo}
+                                  alt={token.symbol}
+                                  className="w-10 h-10 rounded-full bg-[#0B0B0C]"
+                                />
+                              )}
+                              <div>
+                                <div className="font-semibold text-[#F5F5F7]">{token.name}</div>
+                                <div className="text-sm text-[#A9A9B1]">{token.symbol}</div>
                               </div>
-                              <p className="text-[#C9C3BD] text-sm mb-2">{rec.message}</p>
-                              <p className="text-[#FFB347] text-xs font-medium">💡 Action: {rec.action}</p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="font-semibold text-[#F5F5F7]">
+                              {parseFloat(token.balance).toFixed(4)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="font-bold text-[#FF7A00]">
+                              ${token.valueUSD.toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-semibold ${
+                                token.percentChange24h >= 0
+                                  ? 'bg-green-500/10 text-green-500'
+                                  : 'bg-red-500/10 text-red-500'
+                              }`}
+                            >
+                              {token.percentChange24h >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                              {Math.abs(token.percentChange24h).toFixed(2)}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-block px-3 py-1 bg-[#0B0B0C] rounded-lg text-sm text-[#A9A9B1]">
+                              {token.chainName}
+                            </span>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'chains' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {walletData.chainResults
+                  .filter((c) => c.hasAssets)
+                  .map((chain, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all"
+                    >
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">{chain.icon}</span>
+                          <div>
+                            <h3 className="font-bold text-[#F5F5F7]">{chain.chainName}</h3>
+                            <p className="text-sm text-[#A9A9B1]">{chain.symbol}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-[#FF7A00]">
+                            ${chain.totalValue.toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-[#0B0B0C] rounded-lg p-3">
+                          <div className="text-xs text-[#A9A9B1] mb-1">Tokens</div>
+                          <div className="text-lg font-bold text-[#F5F5F7]">{chain.tokenCount}</div>
+                        </div>
+                        <div className="bg-[#0B0B0C] rounded-lg p-3">
+                          <div className="text-xs text-[#A9A9B1] mb-1">Transactions</div>
+                          <div className="text-lg font-bold text-[#F5F5F7]">{chain.txCount}</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {chain.tokens.slice(0, 5).map((token, tidx) => (
+                          <div
+                            key={tidx}
+                            className="flex items-center justify-between bg-[#0B0B0C] rounded-lg px-3 py-2"
+                          >
+                            <span className="text-sm text-[#F5F5F7] font-medium">{token.symbol}</span>
+                            <span className="text-sm text-[#FF7A00] font-semibold">
+                              ${token.valueUSD.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
+              </div>
+            )}
+
+            {activeTab === 'pnl' && (
+              <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#0B0B0C] border-b border-[#FF7A00]/10">
+                      <tr>
+                        <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Token</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Entry</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Current</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">PnL</th>
+                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.values(analytics.pnlData).map((token, idx) => (
+                        <motion.tr
+                          key={idx}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="border-b border-[#FF7A00]/5 hover:bg-[#FF7A00]/5 transition-colors"
+                        >
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="font-semibold text-[#F5F5F7]">{token.symbol}</div>
+                              <div className="text-sm text-[#A9A9B1]">{token.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right text-[#F5F5F7]">
+                            ${token.entryPrice.toFixed(4)}
+                          </td>
+                          <td className="px-6 py-4 text-right text-[#F5F5F7]">
+                            ${token.currentPrice.toFixed(4)}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span
+                              className={`font-bold ${
+                                token.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'
+                              }`}
+                            >
+                              {token.totalPnL >= 0 ? '+' : ''}${token.totalPnL.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-semibold ${
+                                token.profitPercent >= 0
+                                  ? 'bg-green-500/10 text-green-500'
+                                  : 'bg-red-500/10 text-red-500'
+                              }`}
+                            >
+                              {token.profitPercent >= 0 ? <FaArrowUp /> : <FaArrowDown />}
+                              {Math.abs(token.profitPercent).toFixed(1)}%
+                            </span>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'insights' && aiInsights && (
+              <div className="space-y-6">
+                {/* Scores */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { icon: FaTrophy, label: 'Portfolio', value: aiInsights.scores.portfolio, color: 'from-yellow-500 to-orange-500' },
+                    { icon: FaShieldAlt, label: 'Risk', value: aiInsights.scores.risk, color: 'from-blue-500 to-cyan-500' },
+                    { icon: FaRocket, label: 'Performance', value: aiInsights.scores.performance, color: 'from-purple-500 to-pink-500' },
+                    { icon: FaChartPie, label: 'Diversification', value: aiInsights.scores.diversification, color: 'from-green-500 to-emerald-500' }
+                  ].map((score, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6 hover:border-[#FF7A00]/30 transition-all"
+                    >
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${score.color} flex items-center justify-center mb-4`}>
+                        <score.icon className="text-white text-xl" />
+                      </div>
+                      <div className="text-[#A9A9B1] text-sm mb-2">{score.label}</div>
+                      <div className="text-3xl font-bold text-[#F5F5F7]">{score.value}/100</div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Insights */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaLightbulb className="text-[#FF7A00]" />
+                    AI Insights
+                  </h3>
+                  <div className="space-y-4">
+                    {aiInsights.insights.map((insight, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className={`flex gap-4 p-4 rounded-xl border-l-4 ${
+                          insight.type === 'positive'
+                            ? 'bg-green-500/5 border-green-500'
+                            : insight.type === 'warning'
+                            ? 'bg-yellow-500/5 border-yellow-500'
+                            : 'bg-blue-500/5 border-blue-500'
+                        }`}
+                      >
+                        <span className="text-2xl">{insight.icon}</span>
+                        <div>
+                          <h4 className="font-semibold text-[#F5F5F7] mb-1">{insight.title}</h4>
+                          <p className="text-[#A9A9B1] text-sm">{insight.message}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                <div className="bg-[#1A1A1C] border border-[#FF7A00]/10 rounded-2xl p-6">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[#F5F5F7] mb-6">
+                    <FaBrain className="text-[#FF7A00]" />
+                    Recommendations
+                  </h3>
+                  <div className="space-y-6">
+                    {aiInsights.recommendations.map((rec, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="bg-[#0B0B0C] border border-[#FF7A00]/10 rounded-xl p-6"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{rec.icon}</span>
+                            <div>
+                              <h4 className="font-bold text-[#F5F5F7] text-lg">{rec.title}</h4>
+                              <span
+                                className={`inline-block px-2 py-1 rounded-lg text-xs font-semibold mt-1 ${
+                                  rec.priority === 'High'
+                                    ? 'bg-red-500/10 text-red-500'
+                                    : rec.priority === 'Medium'
+                                    ? 'bg-yellow-500/10 text-yellow-500'
+                                    : 'bg-blue-500/10 text-blue-500'
+                                }`}
+                              >
+                                {rec.priority} Priority
+                              </span>
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
+                        <p className="text-[#A9A9B1] mb-4">{rec.description}</p>
+                        <div>
+                          <div className="text-[#FF7A00] font-semibold text-sm mb-2">Action Steps:</div>
+                          <ul className="space-y-2">
+                            {rec.actions.map((action, aidx) => (
+                              <li key={aidx} className="flex items-start gap-2 text-[#A9A9B1] text-sm">
+                                <span className="text-[#FF7A00] mt-1">→</span>
+                                <span>{action}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {/* AI Chat Sidebar */}
+      <AnimatePresence>
+        {showChat && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowChat(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            />
+
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed right-0 top-0 h-full w-full sm:w-[400px] lg:w-[500px] bg-[#1A1A1C] border-l border-[#FF7A00]/20 z-50 flex flex-col shadow-2xl"
+            >
+              {/* Chat Header */}
+              <div className="flex items-center justify-between p-6 border-b border-[#FF7A00]/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF7A00] to-[#FFA64D] flex items-center justify-center">
+                    <FaRobot className="text-[#0B0B0C] text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[#F5F5F7]">Alfredo AI</h3>
+                    <p className="text-xs text-[#A9A9B1]">Your Portfolio Analyst</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="p-2 hover:bg-[#FF7A00]/20 rounded-lg transition-colors"
+                >
+                  <FaTimes className="text-[#A9A9B1] hover:text-[#FF7A00]" />
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {chatMessages.length === 0 && (
+                  <div className="text-center py-12">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="text-6xl mb-4"
+                    >
+                      🦊
+                    </motion.div>
+                    <h4 className="text-lg font-bold text-[#F5F5F7] mb-2">Ask Me Anything!</h4>
+                    <p className="text-[#A9A9B1] text-sm mb-6">
+                      I can analyze your portfolio, explain risks, and suggest strategies.
+                    </p>
+                    <div className="space-y-2">
+                      {[
+                        'What are my biggest risks?',
+                        'Should I rebalance my portfolio?',
+                        'Which tokens look promising?'
+                      ].map((q, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setUserInput(q)}
+                          className="w-full text-left px-4 py-3 bg-[#0B0B0C] hover:bg-[#FF7A00]/10 border border-[#FF7A00]/20 hover:border-[#FF7A00] rounded-xl text-sm text-[#A9A9B1] hover:text-[#FF7A00] transition-all"
+                        >
+                          {q}
+                        </button>
                       ))}
                     </div>
                   </div>
                 )}
-              </motion.div>
-            )}
 
-            {/* Advanced Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Activity Timeline */}
-              {walletData.activityTimeline && walletData.activityTimeline.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-[#1A120C] rounded-2xl border border-[#2A1E14] p-6 hover:border-[#FF8C00]/30 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                      <FaChartLine className="text-[#FF8C00]" />
-                      Activity Timeline
-                    </h3>
-                    <span className="text-xs text-[#C9C3BD] bg-[#0D0A07] px-3 py-1 rounded-full border border-[#2A1E14]">
-                      Last 30 Days
-                    </span>
-                  </div>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <AreaChart data={walletData.activityTimeline}>
-                      <defs>
-                        <linearGradient id="colorActivity" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#FF8C00" stopOpacity={0.5}/>
-                          <stop offset="95%" stopColor="#FF8C00" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2A1E14" vertical={false} />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#C9C3BD" 
-                        tick={{ fill: '#C9C3BD', fontSize: 11 }}
-                        tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis stroke="#C9C3BD" tick={{ fill: '#C9C3BD', fontSize: 11 }} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1A120C', 
-                          border: '1px solid #2A1E14',
-                          borderRadius: '12px',
-                          color: '#FFFFFF',
-                          boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
-                        }}
-                        labelStyle={{ color: '#FFB347', fontWeight: 'bold' }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="transactions" 
-                        stroke="#FF8C00" 
-                        strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorActivity)" 
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </motion.div>
-              )}
-
-              {/* Portfolio Distribution Donut */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[#1A120C] rounded-2xl border border-[#2A1E14] p-6 hover:border-[#FF8C00]/30 transition-all"
-              >
-                <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                  <BiPieChartAlt2 className="text-[#FF8C00]" />
-                  Portfolio Distribution
-                </h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie
-                      data={portfolioDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name}: ${percentage}%`}
-                      dataKey="value"
-                    >
-                      {portfolioDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1A120C', 
-                        border: '1px solid #2A1E14',
-                        borderRadius: '12px'
-                      }}
-                      formatter={(value) => formatCurrency(value)}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </motion.div>
-
-              {/* Risk Radar */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[#1A120C] rounded-2xl border border-[#2A1E14] p-6 hover:border-[#FF8C00]/30 transition-all"
-              >
-                <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                  <FaShieldAlt className="text-[#FF8C00]" />
-                  Risk Analysis Radar
-                </h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <RadarChart data={riskMetrics}>
-                    <PolarGrid stroke="#2A1E14" />
-                    <PolarAngleAxis dataKey="metric" stroke="#C9C3BD" tick={{ fill: '#C9C3BD', fontSize: 11 }} />
-                    <PolarRadiusAxis stroke="#C9C3BD" tick={{ fill: '#C9C3BD' }} domain={[0, 100]} />
-                    <Radar 
-                      name="Score" 
-                      dataKey="score" 
-                      stroke="#FF8C00" 
-                      fill="#FF8C00" 
-                      fillOpacity={0.4}
-                      strokeWidth={2}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1A120C', 
-                        border: '1px solid #2A1E14',
-                        borderRadius: '12px'
-                      }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </motion.div>
-
-              {/* Top Holdings Bar Chart */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[#1A120C] rounded-2xl border border-[#2A1E14] p-6 hover:border-[#FF8C00]/30 transition-all"
-              >
-                <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                  <FaChartBar className="text-[#FF8C00]" />
-                  Top Holdings Value
-                </h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={walletData.topTokens.slice(0, 6)}>
-                    <defs>
-                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#FF8C00" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#FF6A00" stopOpacity={0.8}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2A1E14" vertical={false} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="#C9C3BD" 
-                      tick={{ fill: '#C9C3BD', fontSize: 11 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis stroke="#C9C3BD" tick={{ fill: '#C9C3BD', fontSize: 11 }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1A120C', 
-                        border: '1px solid #2A1E14',
-                        borderRadius: '12px'
-                      }}
-                      formatter={(value) => formatCurrency(value)}
-                    />
-                    <Bar dataKey="value" fill="url(#barGradient)" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </motion.div>
-            </div>
-
-            {/* Market Recommendations */}
-            {recommendations.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-[#1A120C] to-[#0D0A07] rounded-2xl border-2 border-[#FF8C00]/30 p-6 shadow-2xl"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-[#FFB347] bg-clip-text text-transparent flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-[#FF8C00]/10">
-                      <FaRocket className="text-[#FF8C00] text-2xl" />
-                    </div>
-                    Market Opportunities
-                  </h3>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#4CD964]/10 border border-[#4CD964]/30">
-                    <FaFire className="text-[#4CD964] animate-pulse" />
-                    <span className="text-[#4CD964] text-sm font-medium">Trending</span>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendations.map((coin, idx) => (
-                    <motion.div
-                      key={coin.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      className="bg-[#0D0A07] rounded-xl border border-[#2A1E14] p-5 hover:border-[#FF8C00]/50 transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          {coin.image && (
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#2A1E14] group-hover:border-[#FF8C00]/50 transition-all">
-                              <img src={coin.image} alt={coin.name} className="w-full h-full object-cover" />
-                            </div>
-                          )}
-                          <div>
-                            <h4 className="text-white font-bold text-lg">{coin.symbol}</h4>
-                            <p className="text-[#C9C3BD] text-xs">{coin.name}</p>
-                          </div>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          coin.category === 'Blue Chip' ? 'bg-[#4CD964]/10 text-[#4CD964] border border-[#4CD964]/30' :
-                          coin.category === 'Trending' ? 'bg-[#FFB347]/10 text-[#FFB347] border border-[#FFB347]/30' :
-                          'bg-[#FF8C00]/10 text-[#FF8C00] border border-[#FF8C00]/30'
-                        }`}>
-                          {coin.category}
-                        </span>
-                      </div>
-
-                      {coin.currentPrice && (
-                        <div className="mb-4">
-                          <p className="text-white font-bold text-2xl">{formatCurrency(coin.currentPrice)}</p>
-                          <div className="flex items-center gap-3 mt-2">
-                            {coin.priceChange24h >= 0 ? (
-                              <span className="text-[#4CD964] flex items-center gap-1 text-sm font-semibold">
-                                <HiTrendingUp /> +{coin.priceChange24h.toFixed(2)}%
-                              </span>
-                            ) : (
-                              <span className="text-[#FF453A] flex items-center gap-1 text-sm font-semibold">
-                                <HiTrendingDown /> {coin.priceChange24h.toFixed(2)}%
-                              </span>
-                            )}
-                            <span className="text-[#C9C3BD] text-xs">24h</span>
-                          </div>
-                        </div>
-                      )}
-
-                      <p className="text-[#C9C3BD] text-sm mb-4 line-clamp-2 leading-relaxed">{coin.reason}</p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-[#2A1E14]">
-                        <div className="flex items-center gap-2">
-                          <FaBolt className="text-[#FF8C00]" />
-                          <span className="text-xs text-[#C9C3BD]">Confidence:</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-white">{coin.confidence}%</span>
-                            <div className="w-16 bg-[#1A120C] rounded-full h-1.5">
-                              <div 
-                                className="bg-gradient-to-r from-[#FF6A00] to-[#FF8C00] h-1.5 rounded-full transition-all"
-                                style={{ width: `${coin.confidence}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        {coin.marketCapRank && (
-                          <span className="text-xs text-[#FFB347] font-medium">
-                            #{coin.marketCapRank}
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Advanced Tabs */}
-            <Tab.Group selectedIndex={activeTab} onChange={setActiveTab}>
-              <div className="bg-[#1A120C] rounded-2xl border border-[#2A1E14] overflow-hidden">
-                <Tab.List className="flex border-b border-[#2A1E14] overflow-x-auto">
-                  {['Transactions', 'Tokens', 'Analytics', 'Insights'].map((tab, idx) => (
-                    <Tab key={idx} className="outline-none">
-                      {({ selected }) => (
-                        <div className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                          selected
-                            ? 'text-white bg-[#0D0A07] border-b-2 border-[#FF8C00]'
-                            : 'text-[#C9C3BD] hover:text-white hover:bg-[#0D0A07]/30'
-                        }`}>
-                          {tab}
-                        </div>
-                      )}
-                    </Tab>
-                  ))}
-                </Tab.List>
-
-                <Tab.Panels>
-                  {/* Transactions Panel */}
-                  <Tab.Panel className="p-6">
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex-1 relative">
-                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C9C3BD]" />
-                        <input
-                          type="text"
-                          placeholder="Search transactions..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-white placeholder-[#C9C3BD]/50 focus:border-[#FF8C00] focus:outline-none text-sm"
-                        />
-                      </div>
-                      <select 
-                        value={filterMode}
-                        onChange={(e) => setFilterMode(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-white focus:border-[#FF8C00] focus:outline-none text-sm"
-                      >
-                        <option value="all">All</option>
-                        <option value="successful">Successful</option>
-                        <option value="failed">Failed</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                      {walletData.transactions
-                        .filter(tx => {
-                          if (filterMode === 'successful') return !tx.isError;
-                          if (filterMode === 'failed') return tx.isError;
-                          return true;
-                        })
-                        .filter(tx => {
-                          if (!searchQuery) return true;
-                          return tx.hash.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 tx.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 tx.to.toLowerCase().includes(searchQuery.toLowerCase());
-                        })
-                        .slice(0, 30)
-                        .map((tx, idx) => (
-                        <motion.div
-                          key={tx.hash}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.02 }}
-                          className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14] hover:border-[#FF8C00]/50 transition-all group"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3 flex-1 min-w-0">
-                              <div className={`p-2.5 rounded-lg ${
-                                tx.isError ? 'bg-[#FF453A]/10' : 'bg-[#4CD964]/10'
-                              }`}>
-                                {tx.isError ? 
-                                  <FaExclamationTriangle className="text-[#FF453A]" /> : 
-                                  <FaCheckCircle className="text-[#4CD964]" />
-                                }
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <p className="text-white font-medium text-sm font-mono truncate">
-                                    {tx.hash.slice(0, 24)}...{tx.hash.slice(-16)}
-                                  </p>
-                                  <button 
-                                    onClick={() => copyToClipboard(tx.hash)}
-                                    className="text-[#C9C3BD] hover:text-[#FF8C00] transition-colors flex-shrink-0"
-                                  >
-                                    <FaCopy className="text-xs" />
-                                  </button>
-                                </div>
-                                <div className="flex items-center gap-3 text-xs text-[#C9C3BD] flex-wrap">
-                                  <span className="flex items-center gap-1">
-                                    <FaClock />
-                                    {formatDate(tx.timestamp)}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <FaGasPump />
-                                    {tx.gasPrice} Gwei
-                                  </span>
-                                  <span className="px-2 py-1 rounded-full bg-[#2A1E14] font-medium">
-                                    #{tx.blockHeight}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-white font-bold text-sm">
-                                {tx.value} {walletData.balance.symbol}
-                              </p>
-                              {tx.valueUSD > 0 && (
-                                <p className="text-[#FFB347] text-xs font-medium">{formatCurrency(tx.valueUSD)}</p>
-                              )}
-                              <p className="text-[#C9C3BD] text-xs mt-1">
-                                Gas: {parseFloat(tx.gasSpent).toFixed(6)}
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </Tab.Panel>
-
-                  {/* Tokens Panel */}
-                  <Tab.Panel className="p-6">
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex-1 relative">
-                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C9C3BD]" />
-                        <input
-                          type="text"
-                          placeholder="Search tokens..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-white placeholder-[#C9C3BD]/50 focus:border-[#FF8C00] focus:outline-none text-sm"
-                        />
-                      </div>
-                      <select 
-                        value={filterMode}
-                        onChange={(e) => setFilterMode(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-white focus:border-[#FF8C00] focus:outline-none text-sm"
-                      >
-                        <option value="all">All Tokens</option>
-                        <option value="profitable">Profitable</option>
-                        <option value="losing">Losing</option>
-                      </select>
-                      <select 
-                        value={sortMode}
-                        onChange={(e) => setSortMode(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-[#0D0A07] border border-[#2A1E14] text-white focus:border-[#FF8C00] focus:outline-none text-sm"
-                      >
-                        <option value="value">Sort by Value</option>
-                        <option value="change">Sort by Change</option>
-                        <option value="balance">Sort by Balance</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                      {getFilteredTokens().map((token, idx) => (
-                        <motion.div
-                          key={token.contractAddress}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.02 }}
-                          whileHover={{ scale: 1.01 }}
-                          className="p-5 rounded-xl bg-[#0D0A07] border border-[#2A1E14] hover:border-[#FF8C00]/50 transition-all group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              {token.logo ? (
-                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#2A1E14] group-hover:border-[#FF8C00]/50 transition-all">
-                                  <img src={token.logo} alt={token.symbol} className="w-full h-full object-cover" />
-                                </div>
-                              ) : (
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center text-white font-bold text-lg border-2 border-[#2A1E14] group-hover:border-[#FF8C00]/50 transition-all">
-                                  {token.symbol.slice(0, 2)}
-                                </div>
-                              )}
-                              <div>
-                                <h4 className="text-white font-bold text-lg">{token.name}</h4>
-                                <p className="text-[#C9C3BD] text-sm">{token.symbol}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-white font-bold text-lg">{parseFloat(token.balance).toFixed(4)}</p>
-                              <p className="text-[#FFB347] text-sm font-semibold">{formatCurrency(token.valueUSD)}</p>
-                              {token.percentChange24h !== 0 && (
-                                <div className={`flex items-center justify-end gap-1 text-sm font-semibold mt-1 ${
-                                  token.percentChange24h >= 0 ? 'text-[#4CD964]' : 'text-[#FF453A]'
-                                }`}>
-                                  {token.percentChange24h >= 0 ? <HiTrendingUp /> : <HiTrendingDown />}
-                                  {token.percentChange24h >= 0 ? '+' : ''}{token.percentChange24h.toFixed(2)}%
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </Tab.Panel>
-
-                  {/* Analytics Panel */}
-                  <Tab.Panel className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                        <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                          <FaClock className="text-[#FF8C00]" />
-                          Wallet Timeline
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">First Activity</p>
-                            <p className="text-white font-semibold">
-                              {walletData.statistics.firstTransaction ? 
-                                new Date(walletData.statistics.firstTransaction).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                }) : 'N/A'
-                              }
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Last Activity</p>
-                            <p className="text-white font-semibold">
-                              {walletData.statistics.lastTransaction ? 
-                                new Date(walletData.statistics.lastTransaction).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                }) : 'N/A'
-                              }
-                            </p>
-                          </div>
-                          <div className="pt-4 border-t border-[#2A1E14]">
-                            <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Wallet Age</p>
-                            <div className="flex items-baseline gap-2">
-                              <p className="text-white font-bold text-4xl">{walletData.statistics.walletAge}</p>
-                              <p className="text-[#FFB347] text-lg font-medium">days</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-6 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                        <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                          <FaGasPump className="text-[#FF8C00]" />
-                          Gas Analytics
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Total Gas Spent</p>
-                            <div className="flex items-baseline gap-2">
-                              <p className="text-white font-bold text-3xl">
-                                {parseFloat(walletData.statistics.totalGasSpent).toFixed(4)}
-                              </p>
-                              <p className="text-[#FFB347] text-lg font-medium">{walletData.balance.symbol}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Avg Gas per Transaction</p>
-                            <p className="text-white font-semibold text-lg">
-                              {(parseFloat(walletData.statistics.totalGasSpent) / walletData.statistics.totalTransactions).toFixed(8)} {walletData.balance.symbol}
-                            </p>
-                          </div>
-                          <div className="pt-4 border-t border-[#2A1E14]">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[#C9C3BD] text-sm">Success Rate</span>
-                              <span className="text-[#4CD964] font-bold text-lg">{walletData.statistics.successRate}%</span>
-                            </div>
-                            <div className="w-full bg-[#1A120C] rounded-full h-3 overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${walletData.statistics.successRate}%` }}
-                                transition={{ duration: 1, delay: 0.5 }}
-                                className="bg-gradient-to-r from-[#4CD964] to-[#34C759] h-3 rounded-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Tab.Panel>
-
-                  {/* Insights Panel */}
-                  <Tab.Panel className="p-6">
-                    <div className="space-y-6">
-                      {aiInsights && aiInsights.predictions && (
-                        <div className="p-6 rounded-xl bg-gradient-to-br from-[#FF8C00]/10 to-transparent border border-[#FF8C00]/30">
-                          <h4 className="text-white font-bold text-xl mb-6 flex items-center gap-2">
-                            <FaEye className="text-[#FF8C00]" />
-                            AI Predictions & Forecasts
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                              <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Portfolio Growth</p>
-                              <p className="text-white font-bold text-2xl mb-1">{aiInsights.predictions.portfolioGrowth.trend}</p>
-                              <p className="text-[#FFB347] text-sm">30d projection: {aiInsights.predictions.portfolioGrowth.projection30d.toFixed(2)}%</p>
-                              <div className="mt-2 flex items-center gap-2">
-                                <div className="w-full bg-[#1A120C] rounded-full h-2">
-                                  <div 
-                                    className="bg-[#FF8C00] h-2 rounded-full"
-                                    style={{ width: `${aiInsights.predictions.portfolioGrowth.confidence}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs text-[#C9C3BD]">{aiInsights.predictions.portfolioGrowth.confidence}%</span>
-                              </div>
-                            </div>
-
-                            <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                              <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Activity Forecast</p>
-                              <p className="text-white font-bold text-2xl mb-1">{aiInsights.predictions.activityForecast.expected}</p>
-                              <p className="text-[#C9C3BD] text-sm">Expected activity level</p>
-                              <div className="mt-2 flex items-center gap-2">
-                                <div className="w-full bg-[#1A120C] rounded-full h-2">
-                                  <div 
-                                    className="bg-[#4CD964] h-2 rounded-full"
-                                    style={{ width: `${aiInsights.predictions.activityForecast.confidence}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs text-[#C9C3BD]">{aiInsights.predictions.activityForecast.confidence}%</span>
-                              </div>
-                            </div>
-
-                            <div className="p-4 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                              <p className="text-[#C9C3BD] text-xs mb-2 uppercase tracking-wide">Risk Outlook</p>
-                              <p className="text-white font-bold text-2xl mb-1">{aiInsights.predictions.riskForecast.level}</p>
-                              <p className="text-[#C9C3BD] text-sm">Risk trajectory</p>
-                              <div className="mt-2 flex items-center gap-2">
-                                <div className="w-full bg-[#1A120C] rounded-full h-2">
-                                  <div 
-                                    className="bg-[#FFB347] h-2 rounded-full"
-                                    style={{ width: `${aiInsights.predictions.riskForecast.confidence}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs text-[#C9C3BD]">{aiInsights.predictions.riskForecast.confidence}%</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="p-6 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                        <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                          <FaGem className="text-[#FF8C00]" />
-                          Risk Factors Analysis
-                        </h4>
-                        <div className="space-y-3">
-                          {walletData.riskAssessment.factors.map((factor, idx) => (
-                            <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-[#1A120C] border border-[#2A1E14]">
-                              <div className="p-2 rounded-lg bg-[#FFB347]/10 mt-1">
-                                <HiSparkles className="text-[#FFB347]" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-white font-medium mb-1">Risk Factor #{idx + 1}</p>
-                                <p className="text-[#C9C3BD] text-sm">{factor}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-6 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 rounded-xl bg-[#4CD964]/10">
-                              <FaTrophy className="text-[#4CD964] text-2xl" />
-                            </div>
-                            <div>
-                              <p className="text-[#C9C3BD] text-xs uppercase tracking-wide">Wallet Rank</p>
-                              <p className="text-white font-bold text-xl">
-                                {parseFloat(walletData.portfolio.totalValueUSD) > 100000 ? 'Whale 🐋' :
-                                 parseFloat(walletData.portfolio.totalValueUSD) > 10000 ? 'Power User ⚡' :
-                                 parseFloat(walletData.portfolio.totalValueUSD) > 1000 ? 'Active Trader 📈' : 'Explorer 🔍'}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-[#C9C3BD] text-sm">
-                            Based on your portfolio size and activity level
-                          </p>
-                        </div>
-
-                        <div className="p-6 rounded-xl bg-[#0D0A07] border border-[#2A1E14]">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 rounded-xl bg-[#FFB347]/10">
-                              <FaRocket className="text-[#FFB347] text-2xl" />
-                            </div>
-                            <div>
-                              <p className="text-[#C9C3BD] text-xs uppercase tracking-wide">Activity Level</p>
-                              <p className="text-white font-bold text-xl">
-                                {walletData.statistics.totalTransactions > 1000 ? 'Very Active 🔥' :
-                                 walletData.statistics.totalTransactions > 100 ? 'Active ✅' :
-                                 walletData.statistics.totalTransactions > 10 ? 'Moderate 📊' : 'Low 🌱'}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-[#C9C3BD] text-sm">
-                            Transaction frequency and engagement score
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Tab.Panel>
-                </Tab.Panels>
-              </div>
-            </Tab.Group>
-          </div>
-
-          {/* AI Chat Sidebar - 1 column */}
-          <div className="xl:col-span-1">
-            <div className="sticky top-24 bg-[#1A120C] rounded-2xl border-2 border-[#FF8C00]/30 overflow-hidden flex flex-col h-[calc(100vh-8rem)] shadow-2xl shadow-[#FF8C00]/20">
-              <div className="bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] p-5">
-                <div className="flex items-center gap-3">
-                  <motion.div 
-                    animate={{ 
-                      rotate: [0, 10, -10, 10, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"
-                  >
-                    <FaRobot className="text-white text-2xl" />
-                  </motion.div>
-                  <div>
-                    <h3 className="text-white font-bold text-xl">Alfredo AI</h3>
-                    <p className="text-white/90 text-xs flex items-center gap-2">
-                      <motion.div
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-2 h-2 rounded-full bg-[#4CD964]"
-                      />
-                      Advanced Portfolio Assistant
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#0D0A07]">
-                {chatMessages.map((msg) => (
+                {chatMessages.map((message) => (
                   <motion.div
-                    key={msg.id}
+                    key={message.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                      msg.role === 'user'
-                        ? 'bg-gradient-to-r from-[#FF6A00] to-[#FF8C00] text-white shadow-lg'
-                        : 'bg-[#1A120C] border border-[#2A1E14] text-white'
-                    }`}>
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                      <p className="text-xs opacity-60 mt-2">{msg.timestamp}</p>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] text-[#0B0B0C]'
+                          : 'bg-[#0B0B0C] text-[#F5F5F7] border border-[#FF7A00]/20'
+                      }`}
+                    >
+                      {message.role === 'assistant' ? (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+                              li: ({ children }) => <li className="mb-1">{children}</li>,
+                              strong: ({ children }) => <strong className="text-[#FF7A00]">{children}</strong>,
+                              code: ({ children }) => (
+                                <code className="bg-[#1A1A1C] px-1 py-0.5 rounded text-[#FF7A00]">{children}</code>
+                              )
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <div className="text-sm">{message.content}</div>
+                      )}
+                      <div
+                        className={`text-xs mt-2 ${
+                          message.role === 'user' ? 'text-[#0B0B0C]/60' : 'text-[#A9A9B1]'
+                        }`}
+                      >
+                        {message.timestamp}
+                      </div>
                     </div>
                   </motion.div>
                 ))}
+
                 {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-[#1A120C] border border-[#2A1E14] rounded-2xl px-5 py-4">
-                      <div className="flex gap-2">
-                        {[0, 0.3, 0.6].map((delay, idx) => (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex justify-start"
+                  >
+                    <div className="bg-[#0B0B0C] border border-[#FF7A00]/20 rounded-2xl px-4 py-3">
+                      <div className="flex gap-1">
+                        {[0, 1, 2].map((i) => (
                           <motion.div
-                            key={idx}
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} 
-                            transition={{ duration: 1, repeat: Infinity, delay }} 
-                            className="w-2.5 h-2.5 bg-[#FF8C00] rounded-full" 
+                            key={i}
+                            className="w-2 h-2 bg-[#FF7A00] rounded-full"
+                            animate={{ y: [0, -8, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
                           />
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
+
                 <div ref={chatEndRef} />
               </div>
 
-              <div className="p-4 border-t-2 border-[#2A1E14] bg-[#1A120C]">
-                <div className="flex gap-2">
+              {/* Chat Input */}
+              <div className="p-6 border-t border-[#FF7A00]/10">
+                <div className="flex gap-3">
                   <input
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                    placeholder="Ask Alfredo anything..."
-                    className="flex-1 px-4 py-3 rounded-xl bg-[#0D0A07] border-2 border-[#2A1E14] text-white placeholder-[#C9C3BD]/50 focus:border-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-[#FF8C00]/20 text-sm transition-all"
+                    placeholder="Ask about your portfolio..."
                     disabled={isTyping}
+                    className="flex-1 bg-[#0B0B0C] border border-[#FF7A00]/20 rounded-xl px-4 py-3 text-[#F5F5F7] placeholder-[#A9A9B1] outline-none focus:border-[#FF7A00] transition-colors"
                   />
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <button
                     onClick={sendChatMessage}
-                    disabled={isTyping || !userInput.trim()}
-                    className="p-3 rounded-xl bg-gradient-to-r from-[#FF6A00] to-[#FF8C00] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-[#FF8C00]/50"
+                    disabled={!userInput.trim() || isTyping}
+                    className="px-6 py-3 bg-gradient-to-r from-[#FF7A00] to-[#FFA64D] text-[#0B0B0C] rounded-xl font-semibold hover:shadow-lg hover:shadow-[#FF7A00]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     <FaPaperPlane />
-                  </motion.button>
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-export default function Dashboard() {
+export default function AIPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0D0A07] flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-20 h-20 border-4 border-[#FF8C00] border-t-transparent rounded-full"
-        />
+      <div className="min-h-screen bg-[#0B0B0C] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">🦊</div>
+          <div className="text-[#F5F5F7]">Loading...</div>
+        </div>
       </div>
     }>
-      <DashboardContent />
+      <AIDashboard />
     </Suspense>
   );
 }
