@@ -194,7 +194,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="flex flex-wrap items-center justify-center gap-3 mt-8"
+            className="hidden flex-wrap items-center justify-center gap-3 mt-8"
           >
             {[
               { text: 'AI Analysis' },
