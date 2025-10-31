@@ -1321,8 +1321,8 @@ function AIDashboard() {
                   .map((chain, idx) => (
                     <motion.div
                       key={idx}
-                      initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
-                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      initial={{ opacity: 0, scale: 0.9}}
+                      animate={{ opacity: 1, scale: 1}}
                       transition={{ delay: idx * 0.1, type: 'spring' }}
                       whileHover={{ scale: 1.02, y: -8 }}
                       className="bg-gradient-to-br from-[#1A1A1C] to-[#0B0B0C] border border-[#FF7A00]/20 rounded-2xl p-6 hover:border-[#FF7A00] transition-all backdrop-blur-xl relative overflow-hidden group cursor-pointer"
@@ -1336,13 +1336,6 @@ function AIDashboard() {
                         {/* Chain Header */}
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center gap-3">
-                            <motion.span
-                              animate={{ rotate: [0, 10, -10, 0] }}
-                              transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
-                              className="text-5xl filter drop-shadow-[0_0_20px_rgba(255,122,0,0.5)]"
-                            >
-                              {chain.icon}
-                            </motion.span>
                             <div>
                               <h3 className="font-bold text-[#F5F5F7] text-xl group-hover:text-[#FF7A00] transition-colors">
                                 {chain.chainName}
