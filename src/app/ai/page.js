@@ -5,22 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import {
-  FaWallet, FaChartLine, FaRobot, FaPaperPlane, FaCopy,
-  FaExternalLinkAlt, FaChartPie, FaFire, FaLightbulb,
+  FaWallet, FaChartLine, FaRobot, FaPaperPlane, FaCopy, FaChartPie, FaFire, FaLightbulb,
   FaBolt, FaTrophy, FaRocket, FaChartBar, FaLayerGroup,
-  FaGem, FaDownload, FaShare, FaStar, FaGlobe, FaBrain,
-  FaSpinner, FaCheckCircle, FaExclamationTriangle, FaHistory,
+  FaDownload, FaShare, FaStar, FaGlobe, FaBrain,
+  FaCheckCircle, FaExclamationTriangle, FaHistory,
   FaCoins, FaShieldAlt, FaArrowUp, FaArrowDown, FaHome,
-  FaTimes, FaExpand, FaEye, FaHeart, FaBookmark, FaUsers,
-  FaThumbsUp, FaThumbsDown, FaMagic, FaChevronRight,
-  FaInfoCircle, FaBullseye, FaUser, FaExchangeAlt, FaFilter, FaCompass, FaClock, FaSort, FaRadiation, FaCrosshairs
+  FaTimes, FaExpand, FaMagic, FaChevronRight,
+   FaBullseye, FaUser, FaExchangeAlt, FaFilter, FaCompass, FaClock, FaSort
 } from 'react-icons/fa';
-import { HiSparkles, HiLightningBolt, HiTrendingUp, HiTrendingDown } from 'react-icons/hi';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
-  AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis,
+  PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ComposedChart, Scatter
+  Tooltip, ResponsiveContainer
 } from 'recharts';
 
 function AIDashboard() {
