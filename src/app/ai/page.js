@@ -1560,13 +1560,11 @@ function AIDashboard() {
                       whileHover={{ scale: 1.05, y: -5 }}
                       className="bg-[#1A1A1C] border border-[#FF7A00]/20 rounded-2xl p-6 hover:border-[#FF7A00] transition-all text-center"
                     >
-                      <motion.div
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.5 }}
+                      {/* <motion.div
                         className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${score.color} flex items-center justify-center shadow-lg`}
                       >
                         <score.icon className="text-white text-2xl" />
-                      </motion.div>
+                      </motion.div> */}
                       <div className="text-[#A9A9B1] text-xs mb-2">{score.label}</div>
                       <div className="text-4xl font-bold text-[#F5F5F7]">{score.value}</div>
                       <div className="text-xs text-[#A9A9B1] mt-1">/100</div>
