@@ -505,8 +505,6 @@ function AIDashboard() {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
-                    whileHover={{ rotate: 360, scale: 1.2 }}
-                    transition={{ duration: 0.5 }}
                     className="p-3 rounded-xl bg-gradient-to-br from-[#FF7A00] to-[#FFA64D] shadow-lg"
                   >
                     <stat.icon className="text-[#0B0B0C] text-xl" />
