@@ -843,7 +843,7 @@ function AIDashboard() {
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="flex items-center gap-2 text-xl font-bold text-[#F5F5F7]">
                         <motion.div
-                          animate={hoveredChart === 'holdings' ? { rotate: 360 } : {}}
+                          animate={hoveredChart === 'holdings' ? { scale: 1.1 } : {}}
                           transition={{ duration: 0.5 }}
                         >
                           <FaTrophy className="text-[#FF7A00]" />
