@@ -726,7 +726,7 @@ function AIDashboard() {
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="flex items-center gap-2 text-xl font-bold text-[#F5F5F7]">
                         <motion.div
-                          animate={hoveredChart === 'chain' ? { rotate: 360 } : {}}
+                          animate={hoveredChart === 'chain' ? { scale: 1.1 } : {}}
                           transition={{ duration: 0.5 }}
                         >
                           <FaLayerGroup className="text-[#FF7A00]" />
