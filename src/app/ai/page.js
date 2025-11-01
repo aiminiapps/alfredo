@@ -611,7 +611,6 @@ function AIDashboard() {
               <div className="flex items-center gap-6">
                 <div>
                   <h3 className="text-2xl font-bold text-[#F5F5F7] mb-2 flex items-center gap-2">
-                    <FaBrain className="text-[#FF7A00]" />
                     AI Portfolio Health Score
                   </h3>
                   <p className="text-[#A9A9B1] mb-3">
