@@ -739,7 +739,7 @@ export default function AlfredoTaskCenter() {
         {/* Header */}
         <motion.div {...fadeIn} className="text-center pt-8 mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">Alfredo Tasks</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold heading text-white">Alfredo Tasks</h1>
           </div>
           <p className="text-gray-400 text-base sm:text-lg">
             Complete tasks and earn real AFRD tokens on BSC
