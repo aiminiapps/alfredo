@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 
-// ✅ LBLX Token Transaction API - Updated for LabelX
-
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const TOKEN_CONTRACT_ADDRESS = process.env.TOKEN_CONTRACT_ADDRESS;
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org';
 
-console.log('🔧 LBLX Transaction API Configuration:');
+console.log('🔧 AFRD Transaction API Configuration:');
 console.log('- Admin Key:', ADMIN_PRIVATE_KEY ? '✅ Present' : '❌ Missing');
 console.log('- Token Address:', TOKEN_CONTRACT_ADDRESS ? '✅ Present' : '❌ Missing');
 
@@ -53,7 +51,7 @@ function createTransferData(recipientAddress, tokenAmountWei) {
 
 export async function POST(request) {
   const startTime = Date.now();
-  console.log('\n🎯 LBLX Transaction API called at:', new Date().toISOString());
+  console.log('\n🎯 AFRD Transaction API called at:', new Date().toISOString());
 
   try {
     // Environment validation
@@ -69,7 +67,7 @@ export async function POST(request) {
 
     console.log('📦 Processing:', isWelcomeBonus ? 'Welcome Bonus' : `Task ${taskId}`);
     console.log('👤 To User:', address);
-    console.log('💰 Amount:', reward, 'LBLX');
+    console.log('💰 Amount:', reward, 'AFRD');
 
     // Load ethers v6
     const ethers = await import('ethers');
@@ -121,7 +119,7 @@ export async function POST(request) {
 
     processedNonces.add(nonceKey);
 
-    // Task validation - Updated rewards for LabelX
+    // Task validation - Updated rewards for Alfredo
     const validTasks = {
       followX: 100,
       commentX: 75,
@@ -219,8 +217,8 @@ export async function POST(request) {
 
     const processingTime = Date.now() - startTime;
 
-    console.log('🎉 LBLX TRANSACTION SUCCESSFUL!');
-    console.log('✅ Sent', reward, 'LBLX from', adminWallet.address, 'to', address);
+    console.log('🎉 AFRD TRANSACTION SUCCESSFUL!');
+    console.log('✅ Sent', reward, 'AFRD from', adminWallet.address, 'to', address);
     console.log('✅ TX Hash:', txHash);
     console.log('⏱️ Processing time:', processingTime, 'ms');
 
@@ -230,13 +228,14 @@ export async function POST(request) {
       blockNumber: parseInt(receipt.blockNumber, 16),
       gasUsed: parseInt(receipt.gasUsed, 16),
       amount: reward,
-      symbol: 'LBLX',
+      symbol: 'AFRD',
       recipient: address,
       sender: adminWallet.address,
       processingTime,
       explorer: `https://bscscan.com/tx/${txHash}`,
       timestamp: new Date().toISOString(),
-      mode: 'REAL_TRANSACTION_BSC'
+      mode: 'REAL_TRANSACTION_BSC',
+      project: 'Alfredo'
     });
 
   } catch (error) {
@@ -257,19 +256,23 @@ export async function GET() {
 
     return NextResponse.json({
       status: 'healthy',
+      project: 'Alfredo',
       mode: 'REAL_TRANSACTIONS_BSC',
       blockNumber: parseInt(blockNumber, 16),
       adminWallet: adminWallet.address,
       tokenContract: TOKEN_CONTRACT_ADDRESS,
-      tokenSymbol: 'LBLX',
+      tokenSymbol: 'AFRD',
+      tokenName: 'Alfredo Token',
       network: 'Binance Smart Chain',
       chainId: 56,
       rpcUrl: BSC_RPC_URL,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      description: 'AI-Powered Crypto Portfolio Analysis Token'
     });
   } catch (error) {
     return NextResponse.json({
       status: 'unhealthy',
+      project: 'Alfredo',
       error: error.message
     }, { status: 503 });
   }
