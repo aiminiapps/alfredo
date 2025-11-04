@@ -44,9 +44,7 @@ export default function DashboardShowcase() {
         /> */}
         
         {/* Animated Dots Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,140,0,0.15)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -76,7 +74,7 @@ export default function DashboardShowcase() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight max-w-4xl mx-auto">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             Experience Portfolio Intelligence
             <br />
             <span 
@@ -86,7 +84,7 @@ export default function DashboardShowcase() {
             </span>
           </h2>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-gray-400 max-w-3xl text-balance mx-auto leading-relaxed">
             Comprehensive analytics, AI-powered insights, and beautiful visualizations all in one powerful interface designed for serious crypto investors.
           </p>
         </motion.div>
