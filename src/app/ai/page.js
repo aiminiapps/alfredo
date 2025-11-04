@@ -223,7 +223,7 @@ function AIDashboard() {
               {typeof entry.value === 'number'
                 ? entry.value.toFixed(2)
                 : entry.value}
-            </span>
+            </span>  
           </div>
         ))}
       </motion.div>

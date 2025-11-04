@@ -79,7 +79,7 @@ export default function Hero() {
             The First{' '}
             <span className="bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent">
               AI Crypto
-            </span>
+            </span> 
             <br />
             <span className="text-white">Portfolio Analyzer!</span>
           </h1>
