@@ -112,7 +112,7 @@ export default function FeaturesSection() {
             </span>
           </h2>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-balance text-gray-400 max-w-3xl mx-auto leading-relaxed">
             Powerful tools and intelligent features designed to help you make better investment decisions.
           </p>
         </motion.div>
@@ -159,30 +159,13 @@ export default function FeaturesSection() {
 
                 {/* Content */}
                 <div className="relative p-8">
-                  
-                  {/* Icon */}
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                    className="inline-flex p-4 rounded-2xl mb-6"
-                    style={{ 
-                      backgroundColor: `${feature.color}15`,
-                      boxShadow: `0 0 40px ${feature.color}20`
-                    }}
-                  >
-                    <feature.icon 
-                      className="text-4xl" 
-                      style={{ color: feature.color }} 
-                    />
-                  </motion.div>
-
                   {/* Title */}
-                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
+                  <h3 className="text-xl font-semibold heading text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
                     {feature.title}
                   </h3>
                   
                   {/* Description */}
-                  <p className="text-gray-400 leading-relaxed mb-6">
+                  <p className="text-gray-400 text-sm leading-relaxed mb-6">
                     {feature.description}
                   </p>
 
@@ -200,73 +183,8 @@ export default function FeaturesSection() {
                         background: `radial-gradient(circle at 30% 30%, ${feature.color}20, transparent 70%)`
                       }}
                     />
-
-                    {/* Mock Visual */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {/* You can replace this with actual images/illustrations */}
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.05, 1],
-                          rotate: [0, 5, 0]
-                        }}
-                        transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                        className="relative w-32 h-32"
-                      >
-                        {/* Icon as visual placeholder */}
-                        <div 
-                          className="absolute inset-0 rounded-full blur-xl opacity-30"
-                          style={{ backgroundColor: feature.color }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <feature.icon 
-                            className="text-6xl opacity-40" 
-                            style={{ color: feature.color }} 
-                          />
-                        </div>
-                      </motion.div>
-                    </div>
-
-                    {/* Decorative Elements */}
-                    <div className="absolute top-4 right-4">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          opacity: [0.3, 0.6, 0.3]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: feature.color }}
-                      />
-                    </div>
-
-                    <div className="absolute bottom-4 left-4">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.3, 1],
-                          opacity: [0.2, 0.5, 0.2]
-                        }}
-                        transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: feature.color }}
-                      />
-                    </div>
+                    {/* image here */}
                   </div>
-
-                  {/* Progress Bar */}
-                  <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: '100%' }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 + 0.5, duration: 0.8 }}
-                    className="h-1 rounded-full mt-6"
-                    style={{ 
-                      background: `linear-gradient(90deg, ${feature.color}, transparent)`
-                    }}
-                  />
                 </div>
               </div>
             </motion.div>
