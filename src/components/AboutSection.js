@@ -54,7 +54,7 @@ export default function AboutSection() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-16 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
       {/* Premium Background Effects */}
@@ -92,7 +92,7 @@ export default function AboutSection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             Intelligence Meets
             <br />
             <span 
