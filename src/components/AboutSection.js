@@ -226,9 +226,9 @@ export default function AboutSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
-                className="text-lg sm:text-xl text-gray-300 leading-relaxed"
+                className="text-base sm:text-lg text-gray-300/80 leading-relaxed"
               >
-                Alfredo is an <span className="font-semibold" style={{ color: theme.primary }}>AI-powered crypto portfolio intelligence platform</span> that helps you understand your wallet behavior, analyze performance, and make smarter investment decisions.
+                Alfredo is an <span style={{ color: theme.primary }}>AI-powered crypto portfolio intelligence platform</span> that helps you understand your wallet behavior, analyze performance, and make smarter investment decisions.
               </motion.p>
 
               {/* <motion.p
@@ -255,13 +255,13 @@ export default function AboutSection() {
                     duration: 0.6
                   }}
                   whileHover={{ x: 10 }}
-                  className="flex items-start gap-4 p-4 rounded-xl transition-all duration-300 group"
+                  className="flex items-start border-1 border-[#2A1E14] gap-4 p-4 rounded-xl transition-all duration-300 group"
                   style={{
                     backgroundColor: `${theme.cardBg}40`
                   }}
                 >
                   <motion.div
-                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.6 }}
                     className="flex-shrink-0 p-3 rounded-lg"
                     style={{ 
