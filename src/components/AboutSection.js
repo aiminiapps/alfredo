@@ -1,301 +1,317 @@
+// components/AboutSection.jsx - Alfredo Premium Features Section
 'use client'
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 import { 
-  FaChartLine, FaUsers, FaGlobe, FaShieldAlt, 
-  FaCheckCircle, FaRocket, FaBrain, FaBolt 
+  FaBrain, FaNetworkWired, FaChartLine, FaRocket, FaShieldAlt, 
+  FaBolt, FaEye, FaCode, FaGem, FaCube
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import { BiTargetLock } from 'react-icons/bi';
 
 const theme = {
   primary: '#FF8C00',
   secondary: '#FFB347',
   background: '#0D0A07',
   cardBg: '#1A120C',
-  border: '#2A1E14',
-  success: '#4CD964'
+  border: '#2A1E14'
 };
 
 export default function AboutSection() {
-  const stats = [
-    {
-      label: 'Total Portfolio Value',
-      value: '$5.4B',
-      subtitle: 'Analyzed across all users',
-      bgColor: theme.cardBg
-    },
-    {
-      label: 'Active Wallets',
-      value: '62M+',
-      subtitle: 'Growing daily',
-      bgColor: theme.cardBg
-    },
-    {
-      label: 'Supported Networks',
-      value: '180',
-      subtitle: 'Blockchain ecosystems',
-      bgColor: theme.cardBg
-    },
-    {
-      label: '24h Trading Volume',
-      value: '$2.6B',
-      subtitle: 'Real-time tracking',
-      bgColor: theme.success,
-      highlight: true
-    }
-  ];
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
 
-  const trustFeatures = [
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.95, 1, 1, 0.95]);
+
+  const keyFeatures = [
+    {
+      icon: FaBrain,
+      title: 'AI-Powered Intelligence',
+      description: 'Advanced machine learning algorithms analyze your wallet behavior, transaction patterns, and market trends to provide actionable insights and predictions.',
+      color: '#FF8C00',
+      gradient: 'from-orange-500 to-amber-600'
+    },
+    {
+      icon: FaNetworkWired,
+      title: 'Universal Network Support',
+      description: 'Seamlessly track portfolios across Ethereum, BSC, Polygon, Arbitrum, Optimism, and all major blockchain networks from a single unified dashboard.',
+      color: '#4CD964',
+      gradient: 'from-green-500 to-emerald-600'
+    },
+    {
+      icon: FaChartLine,
+      title: 'Intuitive Dashboard',
+      description: 'Experience a beautifully designed, user-friendly interface with real-time data visualization, interactive charts, and comprehensive analytics at your fingertips.',
+      color: '#FFB347',
+      gradient: 'from-amber-500 to-yellow-600'
+    },
     {
       icon: FaShieldAlt,
-      title: 'AI for Investors',
-      description: 'Advanced investment research and real-time insights powered by machine learning'
+      title: 'Advanced Risk Analysis',
+      description: 'Multi-dimensional risk assessment algorithms evaluate your portfolio health, diversification score, and provide personalized recommendations.',
+      color: '#FF453A',
+      gradient: 'from-red-500 to-rose-600'
     },
     {
       icon: FaBolt,
-      title: '24/7 Support',
-      description: 'Always-on customer support to guide your crypto journey'
+      title: 'Real-Time Insights',
+      description: 'Get instant notifications on portfolio changes, market opportunities, and critical wallet activities with our lightning-fast blockchain data processing.',
+      color: '#5E5CE6',
+      gradient: 'from-indigo-500 to-purple-600'
     },
     {
-      icon: FaRocket,
-      title: 'Pro Trading Tools',
-      description: 'Easy-to-use trading interface with professional-grade analytics'
+      icon: FaEye,
+      title: 'Portfolio Intelligence',
+      description: 'Understand your investment behavior, identify patterns, and optimize your strategy with AI-generated reports and predictive analytics.',
+      color: '#32ADE6',
+      gradient: 'from-cyan-500 to-blue-600'
+    }
+  ];
+
+  const stats = [
+    {
+      icon: FaCube,
+      value: 'Unlimited',
+      label: 'Wallet Analysis',
+      description: 'Track any wallet address across all supported networks'
     },
     {
-      icon: FaBrain,
-      title: 'Web3 Integration',
-      description: 'Seamless crypto payments and Web3 wallet connectivity'
+      icon: FaCode,
+      value: 'Real-Time',
+      label: 'Blockchain Data',
+      description: 'Live transaction tracking and portfolio updates'
+    },
+    {
+      icon: FaGem,
+      value: 'AI-Driven',
+      label: 'Smart Insights',
+      description: 'Machine learning powered recommendations'
     }
   ];
 
   return (
-    <section className="relative py-20 sm:py-32 overflow-hidden" style={{ backgroundColor: theme.background }}>
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
+    <section 
+      ref={containerRef}
+      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      style={{ backgroundColor: theme.background }}
+    >
+      {/* Premium Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/10 via-transparent to-transparent" />
         <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-1/4 -left-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{ backgroundColor: `${theme.primary}40` }}
+          style={{ opacity }}
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[120px] bg-orange-500/10"
         />
         <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute bottom-1/4 -right-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{ backgroundColor: `${theme.secondary}40` }}
+          style={{ opacity }}
+          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[120px] bg-amber-500/10"
         />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <motion.div 
+        style={{ opacity, scale }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
         
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          
-          {/* Left Side - Stats Cards */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="mb-8"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: `${theme.primary}20` }}>
-                  <HiSparkles className="text-2xl" style={{ color: theme.primary }} />
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">
-                  Trusted by Millions
-                </h2>
-              </div>
-              <p className="text-gray-400 text-lg">
-                Join the revolution of intelligent crypto portfolio management
-              </p>
-            </motion.div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 * index }}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className={`rounded-2xl p-6 border transition-all duration-300 ${
-                    stat.highlight ? 'shadow-lg' : ''
-                  }`}
-                  style={{
-                    backgroundColor: stat.bgColor,
-                    borderColor: stat.highlight ? theme.success : theme.border,
-                    borderWidth: stat.highlight ? '2px' : '1px',
-                    boxShadow: stat.highlight ? `0 10px 40px ${theme.success}30` : 'none'
-                  }}
-                >
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">
-                      {stat.label}
-                    </p>
-                    <p className={`text-3xl sm:text-4xl font-bold ${
-                      stat.highlight ? 'text-white' : 'text-white'
-                    }`}>
-                      {stat.value}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {stat.subtitle}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right Side - Trust Features */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-6"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Why Choose Alfredo?
-              </h3>
-            </motion.div>
-
-            {trustFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 * index }}
-                whileHover={{ x: 10 }}
-                className="flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 group hover:border-opacity-80"
-                style={{
-                  backgroundColor: `${theme.cardBg}80`,
-                  borderColor: theme.border
-                }}
-              >
-                <div 
-                  className="flex-shrink-0 p-3 rounded-xl transition-all duration-300 group-hover:scale-110"
-                  style={{ backgroundColor: `${theme.primary}20` }}
-                >
-                  <feature.icon className="text-2xl" style={{ color: theme.primary }} />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h4 className="text-white font-semibold text-lg">
-                      {feature.title}
-                    </h4>
-                    <FaCheckCircle 
-                      className="flex-shrink-0 mt-1" 
-                      style={{ color: theme.primary }} 
-                    />
-                  </div>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              className="pt-4"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300"
-                style={{ 
-                  backgroundColor: theme.primary,
-                  boxShadow: `0 10px 30px ${theme.primary}40`
-                }}
-              >
-                <FaRocket className="text-lg" />
-                Start Analyzing Now
-                <motion.div
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  →
-                </motion.div>
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Bottom Stats Bar */}
+        {/* Premium Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.6 }}
-          className="mt-16 p-6 sm:p-8 rounded-2xl border"
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-16 sm:mb-20 lg:mb-24"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 border"
+            style={{ 
+              backgroundColor: `${theme.primary}10`,
+              borderColor: `${theme.primary}30`
+            }}
+          >
+            <HiSparkles className="text-lg" style={{ color: theme.primary }} />
+            <span className="text-sm font-medium" style={{ color: theme.primary }}>
+              Powered by Advanced AI
+            </span>
+          </motion.div>
+
+          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+            Why Alfredo Stands
+            <br />
+            <span 
+              className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent"
+            >
+              Above the Rest
+            </span>
+          </h2>
+
+          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            Experience the future of crypto portfolio management with cutting-edge AI technology,
+            comprehensive network support, and an interface designed for both beginners and professionals.
+          </p>
+        </motion.div>
+
+        {/* Premium Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 sm:mb-20">
+          {keyFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ 
+                duration: 0.7, 
+                delay: index * 0.1,
+                ease: [0.16, 1, 0.3, 1]
+              }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="group relative"
+            >
+              {/* Glow Effect */}
+              <div 
+                className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500"
+                style={{ 
+                  background: `linear-gradient(135deg, ${feature.color}40, transparent)`
+                }}
+              />
+              
+              {/* Card */}
+              <div 
+                className="relative h-full p-8 rounded-2xl border transition-all duration-500"
+                style={{
+                  backgroundColor: theme.cardBg,
+                  borderColor: theme.border
+                }}
+              >
+                {/* Icon */}
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="inline-flex p-4 rounded-xl mb-6"
+                  style={{ 
+                    backgroundColor: `${feature.color}15`,
+                    boxShadow: `0 0 30px ${feature.color}20`
+                  }}
+                >
+                  <feature.icon 
+                    className="text-3xl" 
+                    style={{ color: feature.color }} 
+                  />
+                </motion.div>
+
+                {/* Content */}
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
+                  {feature.title}
+                </h3>
+                
+                <p className="text-gray-400 leading-relaxed text-sm">
+                  {feature.description}
+                </p>
+
+                {/* Hover Indicator */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: '60px' }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 + 0.5, duration: 0.6 }}
+                  className="h-1 rounded-full mt-6"
+                  style={{ 
+                    background: `linear-gradient(90deg, ${feature.color}, transparent)`
+                  }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Stats Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="relative p-8 sm:p-10 rounded-3xl border overflow-hidden"
           style={{
-            backgroundColor: `${theme.cardBg}50`,
+            backgroundColor: `${theme.cardBg}80`,
             borderColor: theme.border,
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(20px)'
           }}
         >
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              { icon: FaUsers, label: 'Active Users', value: '2M+' },
-              { icon: FaChartLine, label: 'Portfolios Tracked', value: '8.5M' },
-              { icon: FaGlobe, label: 'Countries', value: '180+' },
-              { icon: FaBolt, label: 'Uptime', value: '99.9%' }
-            ].map((item, index) => (
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,#FF8C00_1px,transparent_1px),linear-gradient(-45deg,#FF8C00_1px,transparent_1px)] bg-[size:20px_20px]" />
+          </div>
+
+          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
+            {stats.map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.1 * index }}
-                className="text-center"
+                transition={{ delay: index * 0.15, duration: 0.5 }}
+                className="text-center group"
               >
-                <div className="flex justify-center mb-3">
-                  <div 
-                    className="p-3 rounded-xl"
-                    style={{ backgroundColor: `${theme.primary}20` }}
-                  >
-                    <item.icon className="text-2xl" style={{ color: theme.primary }} />
-                  </div>
+                <div className="inline-flex p-4 rounded-2xl mb-4 transition-all duration-300 group-hover:scale-110"
+                  style={{ backgroundColor: `${theme.primary}15` }}
+                >
+                  <stat.icon 
+                    className="text-3xl transition-all duration-300 group-hover:rotate-12" 
+                    style={{ color: theme.primary }} 
+                  />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                  {item.value}
+                <p className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                  {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-400">
-                  {item.label}
+                <p className="text-lg font-semibold mb-1" style={{ color: theme.primary }}>
+                  {stat.label}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {stat.description}
                 </p>
               </motion.div>
             ))}
           </div>
         </motion.div>
-      </div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mt-16 sm:mt-20 text-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, boxShadow: `0 20px 60px ${theme.primary}50` }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-white text-lg shadow-2xl transition-all duration-300"
+            style={{ 
+              background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+              boxShadow: `0 10px 40px ${theme.primary}40`
+            }}
+          >
+            <BiTargetLock className="text-2xl" />
+            Analyze Your Portfolio Now
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <FaRocket className="text-xl" />
+            </motion.div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
