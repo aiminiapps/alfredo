@@ -27,13 +27,13 @@ export default function DashboardShowcase() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-16 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
       {/* Premium Background Effects */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/10 via-transparent to-transparent" />
-        <motion.div
+        {/* <motion.div
           style={{ opacity }}
           animate={{
             scale: [1, 1.3, 1],
@@ -41,7 +41,7 @@ export default function DashboardShowcase() {
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full blur-[180px] bg-gradient-to-r from-orange-500 to-amber-500"
-        />
+        /> */}
         
         {/* Animated Dots Pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -87,7 +87,7 @@ export default function DashboardShowcase() {
           </h2>
 
           <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Comprehensive analytics, AI-powered insights, and beautiful visualizations—all in one powerful interface designed for serious crypto investors.
+            Comprehensive analytics, AI-powered insights, and beautiful visualizations all in one powerful interface designed for serious crypto investors.
           </p>
         </motion.div>
 
@@ -264,9 +264,9 @@ export default function DashboardShowcase() {
             className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-8 sm:mt-12"
           >
             {[
-              { icon: FaChartLine, text: 'Real-Time Analytics' },
-              { icon: FaBrain, text: 'AI-Powered Insights' },
-              { icon: FaRocket, text: 'Lightning Fast' }
+              { text: 'Real-Time Analytics' },
+              { text: 'AI-Powered Insights' },
+              { text: 'Lightning Fast' }
             ].map((feature, i) => (
               <motion.div
                 key={i}
@@ -277,39 +277,9 @@ export default function DashboardShowcase() {
                   borderColor: theme.border
                 }}
               >
-                <feature.icon className="text-base sm:text-lg" style={{ color: theme.primary }} />
                 <span className="text-xs sm:text-sm font-medium text-white">{feature.text}</span>
               </motion.div>
             ))}
-          </motion.div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 1.4 }}
-            className="text-center mt-12"
-          >
-            <Link href="/ai">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-white text-base sm:text-lg shadow-2xl transition-all duration-300"
-                style={{ 
-                  background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
-                  boxShadow: `0 20px 60px ${theme.primary}40`
-                }}
-              >
-                Try Dashboard Now
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  →
-                </motion.span>
-              </motion.button>
-            </Link>
           </motion.div>
         </motion.div>
       </div>
