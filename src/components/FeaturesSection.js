@@ -30,23 +30,23 @@ export default function FeaturesSection() {
       icon: FaWallet,
       title: 'Universal Wallet Analysis',
       description: 'Connect any wallet address and instantly analyze your complete crypto portfolio across all networks.',
-      illustration: '/illustrations/wallet.svg', // You can add SVG illustrations
+      illustration: '/illustrations/wallet.png', 
       color: '#FF8C00',
       gradient: 'from-orange-500 to-amber-600'
     },
     {
       icon: FaChartLine,
-      title: 'Real-Time Market Intelligence',
+      title: 'Market Intelligence',
       description: 'Track live market trends, price movements, and portfolio performance with advanced analytics.',
-      illustration: '/illustrations/chart.svg',
+      illustration: '/illustrations/chart.png',
       color: '#4CD964',
       gradient: 'from-green-500 to-emerald-600'
     },
     {
       icon: FaBrain,
-      title: 'AI-Powered Recommendations',
-      description: 'Get personalized investment strategies powered by machine learning and predictive analytics.',
-      illustration: '/illustrations/ai.svg',
+      title: 'AI Chat',
+      description: 'To get personalized investment strategies powered by machine learning and predictive analytics.',
+      illustration: '/illustrations/ai.png',
       color: '#5E5CE6',
       gradient: 'from-purple-500 to-indigo-600'
     }
@@ -55,24 +55,14 @@ export default function FeaturesSection() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
       {/* Premium Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
-        <motion.div
-          style={{ opacity }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.03, 0.06, 0.03]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-[800px] h-[800px] rounded-full blur-[150px] bg-orange-500/10"
-        />
-        
         {/* Dot Grid Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,140,0,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -102,7 +92,7 @@ export default function FeaturesSection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             Everything You Need for
             <br />
             <span 
@@ -112,7 +102,7 @@ export default function FeaturesSection() {
             </span>
           </h2>
 
-          <p className="text-lg sm:text-xl text-balance text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-gray-400 max-w-3xl text-balance mx-auto leading-relaxed">
             Powerful tools and intelligent features designed to help you make better investment decisions.
           </p>
         </motion.div>
@@ -158,19 +148,9 @@ export default function FeaturesSection() {
                 />
 
                 {/* Content */}
-                <div className="relative p-8">
-                  {/* Title */}
-                  <h3 className="text-xl font-semibold heading text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
-                    {feature.title}
-                  </h3>
-                  
-                  {/* Description */}
-                  <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                    {feature.description}
-                  </p>
-
+                <div className="relative p-4">
                   {/* Illustration/Image Area */}
-                  <div className="relative h-48 rounded-2xl border overflow-hidden mt-6"
+                  <div className="relative h-48 rounded-2xl border overflow-hidden mb-6"
                     style={{
                       backgroundColor: `${theme.background}80`,
                       borderColor: `${feature.color}30`
@@ -184,7 +164,17 @@ export default function FeaturesSection() {
                       }}
                     />
                     {/* image here */}
+                    <img src={feature.illustration} alt='features image'/>
                   </div>
+                  <h3 className="text-xl font-semibold heading text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
+                    {feature.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-400 text-sm leading-relaxed mb-2">
+                    {feature.description}
+                  </p>
+
                 </div>
               </div>
             </motion.div>
@@ -197,21 +187,18 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-20 text-center"
+          className="mt-20 sm:flex items-center justify-center hidden text-center"
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-2 text-gray-400">
-              <FaShieldAlt style={{ color: theme.primary }} />
               <span className="text-sm">Secure & Encrypted</span>
             </div>
             <div className="hidden sm:block w-1 h-1 rounded-full bg-gray-600" />
             <div className="flex items-center gap-2 text-gray-400">
-              <FaBolt style={{ color: theme.primary }} />
               <span className="text-sm">Lightning Fast</span>
             </div>
             <div className="hidden sm:block w-1 h-1 rounded-full bg-gray-600" />
             <div className="flex items-center gap-2 text-gray-400">
-              <FaRocket style={{ color: theme.primary }} />
               <span className="text-sm">Always Improving</span>
             </div>
           </div>
