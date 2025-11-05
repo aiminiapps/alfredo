@@ -1,7 +1,8 @@
-// components/RoadmapSection.jsx - Premium Roadmap Component
+// components/RoadmapSection.jsx - Premium Animated Roadmap (Inspired by Reference)
 'use client'
-import { motion } from 'framer-motion';
-import { FaCheckCircle, FaCircle, FaClock } from 'react-icons/fa';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import { FaCircle } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 
 const theme = {
@@ -13,95 +14,98 @@ const theme = {
 };
 
 export default function RoadmapSection() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+
   const phases = [
     {
       phase: 'Phase 1',
       timeframe: 'Q1–Q2 2025',
-      status: 'completed',
       milestones: [
-        'AI prototype',
-        'Smart contract deploy',
-        'Private beta'
+        { title: 'AI Prototype', description: 'Core AI engine development' },
+        { title: 'Smart Contract Deploy', description: 'Launch on BSC' },
+        { title: 'Private Beta', description: 'Limited user testing' }
       ]
     },
     {
       phase: 'Phase 2',
       timeframe: 'Q3–Q4 2025',
-      status: 'in-progress',
       milestones: [
-        'Public beta',
-        'AFRD IDO',
-        'Listings',
-        'Governance beta'
+        { title: 'Public Beta', description: 'Open access to all users' },
+        { title: 'AFRD IDO', description: 'Token launch event' },
+        { title: 'Exchange Listings', description: 'DEX and CEX integration' },
+        { title: 'Governance Beta', description: 'DAO voting system' }
       ]
     },
     {
       phase: 'Phase 3',
       timeframe: 'Q1–Q2 2026',
-      status: 'upcoming',
       milestones: [
-        'AI v2.0',
-        'Staking',
-        'Mobile app',
-        'API integration'
+        { title: 'AI v2.0', description: 'Enhanced prediction models' },
+        { title: 'Staking Launch', description: 'Earn rewards with AFRD' },
+        { title: 'Mobile App', description: 'iOS and Android release' },
+        { title: 'API Integration', description: 'Developer tools' }
       ]
     },
     {
       phase: 'Phase 4',
       timeframe: 'Q3–Q4 2026',
-      status: 'upcoming',
       milestones: [
-        'DAO launch',
-        'AI chat advisor',
-        'Buyback system'
+        { title: 'DAO Launch', description: 'Full decentralized governance' },
+        { title: 'AI Chat Advisor', description: 'Real-time portfolio assistance' },
+        { title: 'Buyback System', description: 'Token value mechanism' }
       ]
     },
     {
       phase: 'Phase 5',
       timeframe: '2027+',
-      status: 'future',
       milestones: [
-        'Predictive AI',
-        'Multi-chain analytics',
-        'Global expansion'
+        { title: 'Predictive AI', description: 'Advanced market predictions' },
+        { title: 'Multi-Chain Analytics', description: 'Cross-chain support' },
+        { title: 'Global Expansion', description: 'Worldwide partnerships' }
       ]
     }
   ];
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'completed': return FaCheckCircle;
-      case 'in-progress': return FaClock;
-      default: return FaCircle;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'completed': return '#4CD964';
-      case 'in-progress': return '#FF8C00';
-      default: return '#666';
-    }
-  };
-
   return (
     <section 
+      ref={containerRef}
       className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
-      {/* Background */}
+      {/* Large "100x" Background - Animated on Scroll */}
+      <motion.div 
+        style={{ opacity }}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
+      >
+        <motion.h1 
+          style={{
+            opacity: useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.05, 0.02]),
+            scale: useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8])
+          }}
+          className="text-[15rem] sm:text-[20rem] lg:text-[30rem] xl:text-[40rem] font-black tracking-tighter select-none"
+          style={{
+            background: `linear-gradient(180deg, ${theme.primary}15, transparent)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          100x
+        </motion.h1>
+      </motion.div>
+
+      {/* Gradient Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/10 via-transparent to-transparent" />
-        
-        {/* Large "100x" Background Text */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
-          <h1 className="text-[20rem] sm:text-[30rem] lg:text-[40rem] font-black tracking-tighter">
-            100x
-          </h1>
-        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header */}
         <motion.div
@@ -109,7 +113,7 @@ export default function RoadmapSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16 sm:mb-20"
+          className="text-center mb-20"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -128,7 +132,7 @@ export default function RoadmapSection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="heading text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
             Roadmap
           </h2>
 
@@ -137,181 +141,142 @@ export default function RoadmapSection() {
           </p>
         </motion.div>
 
-        {/* Timeline - Vertical on Mobile, Horizontal Scroll on Desktop */}
+        {/* Timeline */}
         <div className="relative">
-          {/* Desktop: Horizontal Scroll */}
-          <div className="hidden lg:block overflow-x-auto pb-8 scrollbar-hide">
-            <div className="flex gap-8 min-w-max px-4">
-              {phases.map((phase, index) => {
-                const StatusIcon = getStatusIcon(phase.status);
-                const statusColor = getStatusColor(phase.status);
-                
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1, duration: 0.6 }}
-                    className="relative group"
-                    style={{ minWidth: '320px', maxWidth: '320px' }}
-                  >
-                    {/* Connecting Line */}
-                    {index < phases.length - 1 && (
-                      <div 
-                        className="absolute top-12 left-full w-8 h-0.5 bg-gradient-to-r from-gray-700 to-transparent"
-                      />
-                    )}
+          {/* Vertical Center Line */}
+          <div 
+            className="absolute left-8 sm:left-12 md:left-1/2 top-0 bottom-0 w-px md:-ml-px"
+            style={{
+              background: `linear-gradient(to bottom, transparent, ${theme.primary}40, transparent)`
+            }}
+          />
 
-                    {/* Phase Card */}
+          {/* Phase Cards */}
+          <div className="space-y-16 sm:space-y-20">
+            {phases.map((phase, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: index * 0.1,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="relative"
+              >
+                {/* Timeline Dot */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 200 }}
+                  className="absolute left-8 sm:left-12 md:left-1/2 w-4 h-4 md:-ml-2 rounded-full border-4 z-10"
+                  style={{
+                    backgroundColor: theme.background,
+                    borderColor: theme.primary,
+                    boxShadow: `0 0 0 4px ${theme.primary}20`
+                  }}
+                />
+
+                {/* Content Container - Alternating Layout on Desktop */}
+                <div className={`md:grid md:grid-cols-2 md:gap-12 ${
+                  index % 2 === 0 ? '' : 'md:grid-flow-dense'
+                }`}>
+                  {/* Phase Label - Left on Even, Right on Odd */}
+                  <motion.div
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 + 0.4 }}
+                    className={`mb-6 md:mb-0 md:text-${index % 2 === 0 ? 'right' : 'left'} ${
+                      index % 2 === 0 ? '' : 'md:col-start-2'
+                    } pl-20 sm:pl-24 md:pl-0 md:pr-${index % 2 === 0 ? '8' : '0'}`}
+                  >
+                    <h3 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                      {phase.phase}
+                    </h3>
                     <div 
-                      className="rounded-2xl border p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                      className="inline-flex px-4 py-1.5 rounded-full text-sm font-bold"
                       style={{
-                        backgroundColor: `${theme.cardBg}95`,
-                        borderColor: phase.status === 'in-progress' ? theme.primary : theme.border
+                        backgroundColor: `${theme.primary}15`,
+                        color: theme.primary
                       }}
                     >
-                      {/* Phase Number & Status */}
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-2xl font-bold text-white">
-                          {phase.phase}
-                        </h3>
-                        <StatusIcon 
-                          className="text-2xl" 
-                          style={{ color: statusColor }} 
-                        />
-                      </div>
+                      {phase.timeframe}
+                    </div>
+                  </motion.div>
 
-                      {/* Timeframe */}
-                      <div 
-                        className="inline-flex px-3 py-1 rounded-full text-sm font-semibold mb-6"
-                        style={{
-                          backgroundColor: `${statusColor}15`,
-                          color: statusColor
-                        }}
-                      >
-                        {phase.timeframe}
-                      </div>
-
-                      {/* Milestones */}
-                      <div className="space-y-3">
-                        {phase.milestones.map((milestone, idx) => (
+                  {/* Milestones Card - Right on Even, Left on Odd */}
+                  <motion.div
+                    initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 + 0.5 }}
+                    className={`${
+                      index % 2 === 0 ? '' : 'md:col-start-1 md:row-start-1'
+                    } pl-20 sm:pl-24 md:pl-${index % 2 === 0 ? '8' : '0'}`}
+                  >
+                    <div 
+                      className="rounded-2xl border p-6 sm:p-8 backdrop-blur-sm hover:scale-[1.02] transition-all duration-300"
+                      style={{
+                        backgroundColor: `${theme.cardBg}95`,
+                        borderColor: theme.border
+                      }}
+                    >
+                      <div className="space-y-4">
+                        {phase.milestones.map((milestone, mIdx) => (
                           <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
+                            key={mIdx}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 + idx * 0.05 }}
+                            transition={{ delay: index * 0.1 + 0.6 + mIdx * 0.05 }}
                             className="flex items-start gap-3"
                           >
-                            <div 
-                              className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                              style={{ backgroundColor: statusColor }}
+                            <FaCircle 
+                              className="text-xs mt-1.5 flex-shrink-0" 
+                              style={{ color: theme.primary }} 
                             />
-                            <p className="text-gray-400 text-sm leading-relaxed">
-                              {milestone}
-                            </p>
+                            <div>
+                              <h4 className="text-white font-semibold mb-1">
+                                {milestone.title}
+                              </h4>
+                              <p className="text-gray-400 text-sm">
+                                {milestone.description}
+                              </p>
+                            </div>
                           </motion.div>
                         ))}
                       </div>
                     </div>
                   </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Mobile: Vertical Stack */}
-          <div className="lg:hidden space-y-8">
-            {phases.map((phase, index) => {
-              const StatusIcon = getStatusIcon(phase.status);
-              const statusColor = getStatusColor(phase.status);
-              
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                  className="relative"
-                >
-                  {/* Connecting Line */}
-                  {index < phases.length - 1 && (
-                    <div 
-                      className="absolute left-8 top-20 w-0.5 h-16 bg-gradient-to-b from-gray-700 to-transparent"
-                    />
-                  )}
-
-                  {/* Phase Card */}
-                  <div 
-                    className="rounded-2xl border p-6 backdrop-blur-sm"
-                    style={{
-                      backgroundColor: `${theme.cardBg}95`,
-                      borderColor: phase.status === 'in-progress' ? theme.primary : theme.border
-                    }}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Status Icon */}
-                      <div 
-                        className="p-3 rounded-xl flex-shrink-0"
-                        style={{ backgroundColor: `${statusColor}15` }}
-                      >
-                        <StatusIcon 
-                          className="text-2xl" 
-                          style={{ color: statusColor }} 
-                        />
-                      </div>
-
-                      <div className="flex-1">
-                        {/* Phase & Timeframe */}
-                        <h3 className="text-2xl font-bold text-white mb-2">
-                          {phase.phase}
-                        </h3>
-                        <div 
-                          className="inline-flex px-3 py-1 rounded-full text-sm font-semibold mb-4"
-                          style={{
-                            backgroundColor: `${statusColor}15`,
-                            color: statusColor
-                          }}
-                        >
-                          {phase.timeframe}
-                        </div>
-
-                        {/* Milestones */}
-                        <div className="space-y-2 mt-4">
-                          {phase.milestones.map((milestone, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                              <div 
-                                className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                                style={{ backgroundColor: statusColor }}
-                              />
-                              <p className="text-gray-400 text-sm">
-                                {milestone}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Custom Scrollbar Styles */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+        {/* Tagline */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-20 text-center"
+        >
+          <p className="text-xl sm:text-2xl font-semibold text-gray-400 italic">
+            "Alfredo evolves with you — becoming{' '}
+            <span 
+              className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent"
+            >
+              smarter every cycle
+            </span>
+            ."
+          </p>
+        </motion.div>
+      </div>
     </section>
   );
 }
