@@ -14,7 +14,7 @@ const theme = {
 export default function TaskCenterSection() {
   return (
     <section 
-      className="relative py-24 sm:py-32 overflow-hidden" 
+      className="relative py-14 sm:py-32 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
       {/* Subtle Background Gradient */}
@@ -27,7 +27,7 @@ export default function TaskCenterSection() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Main Content Container */}
         <motion.div
@@ -50,7 +50,7 @@ export default function TaskCenterSection() {
             }}
           />
 
-          <div className="relative px-8 sm:px-12 lg:px-20 py-16 sm:py-20 lg:py-24 text-center">
+          <div className="relative px-8 sm:px-12 lg:px-20 py-16 sm:py-20 text-center">
             
             {/* Main Heading */}
             <motion.h2
@@ -58,7 +58,7 @@ export default function TaskCenterSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="heading text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight"
+              className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight"
             >
               <span className="text-white">READY TO </span>
               <span 
@@ -76,10 +76,9 @@ export default function TaskCenterSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed"
+              className="text-base sm:text-lg text-gray-400 text-balance max-w-3xl mx-auto mb-10 leading-relaxed"
             >
               Complete simple social tasks and earn real AFRD tokens instantly.
-              <br className="hidden sm:block" />
               Connect your wallet, engage with our community, and get rewarded on-chain.
             </motion.p>
 
@@ -119,10 +118,10 @@ export default function TaskCenterSection() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="mt-10 flex items-center justify-center gap-6 text-sm text-gray-500"
+              className="mt-10 sm:text-base text-xs flex items-center justify-center gap-2 sm:gap-4 text-gray-500"
             >
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <div className="size-1 sm:size-2 rounded-full bg-green-500" />
                 <span>Instant Payouts</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-gray-700" />
