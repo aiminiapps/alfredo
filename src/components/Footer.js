@@ -33,12 +33,6 @@ export default function Footer() {
     ]
   };
 
-  const features = [
-    { icon: FaBrain, text: 'AI-Powered Analytics' },
-    { icon: FaRocket, text: 'Real-Time Insights' },
-    { icon: FaShieldAlt, text: 'Secure & Transparent' }
-  ];
-
   return (
     <footer 
       className="relative overflow-hidden border-t"
@@ -93,23 +87,6 @@ export default function Footer() {
                 <p className="text-gray-400 mb-6 leading-relaxed">
                   AI-powered crypto portfolio intelligence. Understand your wallet, your behavior, and your future.
                 </p>
-
-                {/* Features */}
-                <div className="space-y-3 mb-8">
-                  {features.map((feature, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center gap-2 text-sm text-gray-500"
-                    >
-                      <feature.icon style={{ color: theme.primary }} />
-                      <span>{feature.text}</span>
-                    </motion.div>
-                  ))}
-                </div>
 
                 {/* Email */}
                 <a 
