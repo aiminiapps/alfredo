@@ -1,9 +1,11 @@
 'use client'
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import { FaTelegram, FaTwitter, FaUsers, FaVoteYea } from 'react-icons/fa';
+import { FaUsers, FaVoteYea } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { BiCodeAlt } from 'react-icons/bi';
+import { RiTwitterXLine } from "react-icons/ri";
+import { LiaTelegram } from "react-icons/lia";
 
 const theme = {
   primary: '#FF8C00',
@@ -15,31 +17,6 @@ const theme = {
 
 export default function CommunitySection() {
   const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.95, 1, 1, 0.95]);
-
-  const features = [
-    {
-      icon: FaVoteYea,
-      title: 'Democratic Governance',
-      description: 'Vote on protocol upgrades, feature requests, and strategic partnerships'
-    },
-    {
-      icon: BiCodeAlt,
-      title: 'Open Development',
-      description: 'Influence AI model improvements and suggest new analytics features'
-    },
-    {
-      icon: FaUsers,
-      title: 'Community First',
-      description: 'Shape the future of Alfredo through active participation and feedback'
-    }
-  ];
 
   return (
     <section 
@@ -47,12 +24,14 @@ export default function CommunitySection() {
       className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
-      {/* Background Effects */}
-      <div className="absolute inset-0">
+        {/* Premium Background */}
+        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
+        {/* Dot Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
       </div>
 
       <motion.div 
-        style={{ scale, opacity }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
       >
         
@@ -92,8 +71,7 @@ export default function CommunitySection() {
           </h2>
 
           <p className="text-base sm:text-lg text-balance text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            AFRD holders are not just users they're decision-makers.
-            Through Alfredo DAO, the community shapes product upgrades, AI model improvements, and partnership directions.
+            AFRD holders are not just users they're decision-makers. Through Alfredo DAO, the community shapes product upgrades, AI model improvements, and partnership directions.
           </p>
         </motion.div>
 
@@ -128,7 +106,7 @@ export default function CommunitySection() {
                   boxShadow: `0 10px 40px ${theme.primary}40`
                 }}
               >
-                <FaTelegram className="text-xl" />
+                <LiaTelegram className="text-xl" />
                 Join Telegram Community
               </motion.a>
 
@@ -149,7 +127,7 @@ export default function CommunitySection() {
                   borderColor: `${theme.primary}40`
                 }}
               >
-                <FaTwitter className="text-xl" />
+                <RiTwitterXLine className="text-xl" />
                 Follow on X (Twitter)
               </motion.a>
             </div>
@@ -186,13 +164,13 @@ export default function CommunitySection() {
           </div>
         </motion.div>
 
-        {/* Stats Bar */}
+        {/* Stats Bar - now hidden */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6"
+          className="mt-16 hidden grid grid-cols-1 sm:grid-cols-3 gap-6"
         >
           {[
             { label: 'Community Members', value: '10K+', icon: FaUsers },
