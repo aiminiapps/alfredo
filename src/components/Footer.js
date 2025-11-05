@@ -19,22 +19,17 @@ const theme = {
 export default function Footer() {
   const footerLinks = {
     product: [
-      { label: 'Portfolio Analysis', href: '/ai' },
-      { label: 'Task Center', href: '/tasks' },
-      { label: 'Dashboard', href: '/ai' },
-      { label: 'Features', href: '#features' }
+      { label: 'Portfolio Analysis', href: '/' },
+      { label: 'Task Center', href: '/tasks' }
     ],
     resources: [
       { label: 'Whitepaper', href: '#', icon: FaFileAlt },
-      { label: 'Documentation', href: '#', icon: FaFileAlt },
-      { label: 'Token Tracker', href: 'https://bscscan.com', icon: FaExternalLinkAlt },
-      { label: 'API Docs', href: '#', icon: FaFileAlt }
+      { label: 'Token Tracker', href: 'https://bscscan.com', icon: FaExternalLinkAlt }
+
     ],
     community: [
       { label: 'Twitter / X', href: 'https://twitter.com/Alfredo_AI', icon: FaTwitter },
-      { label: 'Telegram', href: 'https://t.me/alfredo_community', icon: FaTelegram },
-      { label: 'Discord', href: 'https://discord.gg/alfredo', icon: FaDiscord },
-      { label: 'GitHub', href: 'https://github.com/alfredo', icon: FaGithub }
+      { label: 'Telegram', href: 'https://t.me/alfredo_community', icon: FaTelegram }
     ]
   };
 
