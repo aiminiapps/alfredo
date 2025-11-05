@@ -44,24 +44,11 @@ export default function CommunitySection() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
       {/* Background Effects */}
       <div className="absolute inset-0">
-        <motion.div
-          style={{ opacity }}
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/10 via-transparent to-transparent"
-        />
-        <motion.div
-          style={{ opacity }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[150px] bg-gradient-to-r from-orange-500 to-amber-500"
-        />
       </div>
 
       <motion.div 
@@ -94,7 +81,7 @@ export default function CommunitySection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             <span className="text-white">Driven by Data.</span>
             <br />
             <span 
@@ -104,63 +91,11 @@ export default function CommunitySection() {
             </span>
           </h2>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            AFRD holders are not just users — they're decision-makers.
-            <br className="hidden sm:block" />
+          <p className="text-base sm:text-lg text-balance text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            AFRD holders are not just users they're decision-makers.
             Through Alfredo DAO, the community shapes product upgrades, AI model improvements, and partnership directions.
           </p>
         </motion.div>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="group relative rounded-2xl border p-8 backdrop-blur-sm"
-              style={{
-                backgroundColor: `${theme.cardBg}95`,
-                borderColor: theme.border
-              }}
-            >
-              {/* Hover Glow */}
-              <div 
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 50% 50%, ${theme.primary}10, transparent 70%)`
-                }}
-              />
-
-              {/* Icon */}
-              <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex p-4 rounded-xl mb-6"
-                style={{ 
-                  backgroundColor: `${theme.primary}15`,
-                  boxShadow: `0 0 20px ${theme.primary}20`
-                }}
-              >
-                <feature.icon 
-                  className="text-3xl" 
-                  style={{ color: theme.primary }} 
-                />
-              </motion.div>
-
-              {/* Content */}
-              <h3 className="text-xl font-bold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </motion.div>
-          ))}
-        </div>
 
         {/* CTA Container */}
         <motion.div
