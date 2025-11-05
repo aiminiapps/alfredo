@@ -1,12 +1,11 @@
 'use client'
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  FaTwitter, FaTelegram, FaDiscord, FaGithub, 
-  FaExternalLinkAlt, FaEnvelope, FaFileAlt,
-  FaBrain, FaRocket, FaShieldAlt
-} from 'react-icons/fa';
+import { FaExternalLinkAlt, FaEnvelope, FaFileAlt } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import { RiTwitterXLine } from "react-icons/ri";
+import { LiaTelegram } from "react-icons/lia";
 
 const theme = {
   primary: '#FF8C00',
@@ -28,8 +27,8 @@ export default function Footer() {
 
     ],
     community: [
-      { label: 'Twitter / X', href: 'https://twitter.com/Alfredo_AI', icon: FaTwitter },
-      { label: 'Telegram', href: 'https://t.me/alfredo_community', icon: FaTelegram }
+      { label: 'X', href: 'https://twitter.com/Alfredo_AI', icon: RiTwitterXLine },
+      { label: 'Telegram', href: 'https://t.me/alfredo_community', icon: LiaTelegram }
     ]
   };
 
@@ -56,18 +55,8 @@ export default function Footer() {
                 transition={{ duration: 0.6 }}
               >
                 {/* Logo */}
-                <Link href="/" className="inline-flex items-center gap-3 mb-6 group">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                    className="p-2 rounded-xl"
-                    style={{ backgroundColor: `${theme.primary}15` }}
-                  >
-                    <HiSparkles className="text-2xl" style={{ color: theme.primary }} />
-                  </motion.div>
-                  <span className="heading text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300">
-                    Alfredo
-                  </span>
+                <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+                  <Image src="/logo.png" alt='logo' width={200} height={100}/>
                 </Link>
 
                 {/* Description */}
