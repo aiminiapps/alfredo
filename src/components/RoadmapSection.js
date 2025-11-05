@@ -78,22 +78,26 @@ export default function RoadmapSection() {
       className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
+              {/* Premium Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
+        {/* Dot Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
+      </div>
       {/* Large "100x" Background - Animated on Scroll */}
       <motion.div 
         style={{ opacity }}
         className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
       >
         <motion.h1 
-          style={{
-            opacity: useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.05, 0.02]),
-            scale: useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8])
-          }}
           className="text-[15rem] sm:text-[20rem] lg:text-[30rem] xl:text-[40rem] font-black tracking-tighter select-none"
           style={{
             background: `linear-gradient(180deg, ${theme.primary}15, transparent)`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            backgroundClip: 'text',
+            // opacity: useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.05, 0.02]),
+            // scale: useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8])
           }}
         >
           100x
@@ -132,12 +136,12 @@ export default function RoadmapSection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             Roadmap
           </h2>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto">
-            From Prototype to AI Governance — Alfredo evolves with you, becoming smarter every cycle.
+          <p className="text-base sm:text-lg text-gray-400 max-w-3xl text-balance mx-auto leading-relaxed">
+            From Prototype to AI Governance Alfredo evolves with you, becoming smarter every cycle.
           </p>
         </motion.div>
 
@@ -267,7 +271,7 @@ export default function RoadmapSection() {
           className="mt-20 text-center"
         >
           <p className="text-xl sm:text-2xl font-semibold text-gray-400 italic">
-            "Alfredo evolves with you — becoming{' '}
+            "Alfredo evolves with you becoming{' '}
             <span 
               className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent"
             >
