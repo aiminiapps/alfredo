@@ -98,20 +98,14 @@ export default function TokenomicsSection() {
 
   return (
     <section 
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
-      {/* Background Effects */}
+      {/* Premium Background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/10 via-transparent to-transparent" />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.03, 0.08, 0.03]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full blur-[180px] bg-gradient-to-r from-orange-500 to-amber-500"
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
+        {/* Dot Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -141,7 +135,7 @@ export default function TokenomicsSection() {
             </span>
           </motion.div>
 
-          <h2 className="heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-2xl heading md:text-6xl lg:text-5xl text-white mb-6 leading-tight">
             The Utility Engine
             <br />
             <span 
@@ -151,13 +145,13 @@ export default function TokenomicsSection() {
             </span>
           </h2>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            The AFRD token fuels the Alfredo ecosystem — enabling AI reports, governance, rewards, and sustainable growth.
+          <p className="text-base sm:text-lg text-balance text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            The AFRD token fuels the Alfredo ecosystem enabling AI reports, governance, rewards, and sustainable growth.
           </p>
         </motion.div>
 
         {/* Quick Facts Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
           {quickFacts.map((fact, index) => (
             <motion.div
               key={index}
@@ -172,22 +166,6 @@ export default function TokenomicsSection() {
                 borderColor: theme.border
               }}
             >
-              {/* Icon */}
-              <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex p-3 rounded-xl mb-4"
-                style={{ 
-                  backgroundColor: `${fact.color}15`,
-                  boxShadow: `0 0 20px ${fact.color}20`
-                }}
-              >
-                <fact.icon 
-                  className="text-2xl" 
-                  style={{ color: fact.color }} 
-                />
-              </motion.div>
-
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{fact.label}</p>
               <p className="text-xl font-bold text-white mb-1">{fact.value}</p>
               <p className="text-sm font-medium" style={{ color: fact.color }}>{fact.subValue}</p>
@@ -209,7 +187,7 @@ export default function TokenomicsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="rounded-3xl border overflow-hidden backdrop-blur-xl mb-16"
+          className="rounded-3xl border overflow-hidden backdrop-blur-xl mb-6"
           style={{
             backgroundColor: `${theme.cardBg}95`,
             borderColor: theme.border,
