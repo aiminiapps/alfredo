@@ -2,6 +2,7 @@ import AboutSection from "@/components/AboutSection";
 import DashboardShowcase from "@/components/DashboardShowcase";
 import FeaturesSection from "@/components/FeaturesSection";
 import Hero from "@/components/Hero";
+import TaskCenterSection from "@/components/TaskCenterSection";
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <AboutSection/>
       <DashboardShowcase/>
       <FeaturesSection/>
+      <TaskCenterSection/>
     </div>
   );
 }
