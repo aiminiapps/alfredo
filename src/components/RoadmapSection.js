@@ -75,7 +75,7 @@ export default function RoadmapSection() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 sm:py-32 lg:py-40 overflow-hidden" 
+      className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
               {/* Premium Background */}
@@ -176,7 +176,7 @@ export default function RoadmapSection() {
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 200 }}
-                  className="absolute left-8 sm:left-12 md:left-1/2 w-4 h-4 md:-ml-2 rounded-full border-4 z-10"
+                  className="absolute left-6 sm:left-12 md:left-1/2 w-4 h-4 md:-ml-2 rounded-full border-4 z-10"
                   style={{
                     backgroundColor: theme.background,
                     borderColor: theme.primary,
@@ -198,7 +198,7 @@ export default function RoadmapSection() {
                       index % 2 === 0 ? '' : 'md:col-start-2'
                     } pl-20 sm:pl-24 md:pl-0 md:pr-${index % 2 === 0 ? '8' : '0'}`}
                   >
-                    <h3 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                    <h3 className="text-2xl heading sm:text-3xl font-bold text-white mb-2">
                       {phase.phase}
                     </h3>
                     <div 
