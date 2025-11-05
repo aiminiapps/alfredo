@@ -3,6 +3,7 @@ import DashboardShowcase from "@/components/DashboardShowcase";
 import FeaturesSection from "@/components/FeaturesSection";
 import Hero from "@/components/Hero";
 import TaskCenterSection from "@/components/TaskCenterSection";
+import TokenomicsSection from "@/components/TokenomicsSection";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <DashboardShowcase/>
       <FeaturesSection/>
       <TaskCenterSection/>
+      <TokenomicsSection/>
     </div>
   );
 }
