@@ -41,19 +41,6 @@ export default function Footer() {
         borderColor: theme.border
       }}
     >
-      {/* Background Effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.02, 0.05, 0.02]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-[150px] bg-orange-500"
-        />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Main Footer Content */}
@@ -84,8 +71,8 @@ export default function Footer() {
                 </Link>
 
                 {/* Description */}
-                <p className="text-gray-400 mb-6 leading-relaxed">
-                  AI-powered crypto portfolio intelligence. Understand your wallet, your behavior, and your future.
+                <p className="text-gray-400 mb-2 leading-relaxed">
+                  AI-powered crypto portfolio intelligence.
                 </p>
 
                 {/* Email */}
@@ -198,23 +185,6 @@ export default function Footer() {
             <p className="text-gray-500 text-sm">
               © {new Date().getFullYear()} Alfredo. All rights reserved.
             </p>
-
-            {/* Legal Links */}
-            <div className="flex items-center gap-6">
-              <Link 
-                href="/privacy"
-                className="text-gray-500 hover:text-white transition-colors duration-300 text-sm"
-              >
-                Privacy Policy
-              </Link>
-              <Link 
-                href="/terms"
-                className="text-gray-500 hover:text-white transition-colors duration-300 text-sm"
-              >
-                Terms of Service
-              </Link>
-            </div>
-
             {/* Built with love */}
             <div className="flex items-center gap-2 text-gray-500 text-sm">
               <span>Built with</span>
