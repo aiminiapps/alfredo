@@ -1,4 +1,5 @@
 import AboutSection from "@/components/AboutSection";
+import CommunitySection from "@/components/CommunitySection";
 import DashboardShowcase from "@/components/DashboardShowcase";
 import FeaturesSection from "@/components/FeaturesSection";
 import Hero from "@/components/Hero";
@@ -16,6 +17,7 @@ export default function Home() {
       <TaskCenterSection/>
       <TokenomicsSection/>
       <RoadmapSection/>
+      <CommunitySection/>
     </div>
   );
 }
