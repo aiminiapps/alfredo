@@ -17,14 +17,11 @@ export default function TaskCenterSection() {
       className="relative py-14 sm:py-32 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >
-      {/* Subtle Background Gradient */}
+      {/* Premium Background */}
       <div className="absolute inset-0">
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse at center, ${theme.primary}08 0%, transparent 70%)`
-          }}
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/5 via-transparent to-transparent" />
+        {/* Dot Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,140,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
