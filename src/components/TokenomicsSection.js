@@ -216,8 +216,8 @@ export default function TokenomicsSection() {
             {allocationData.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08, duration: 0.5 }}
                 className="group px-6 sm:px-8 py-5 hover:bg-opacity-50 transition-all duration-300"
