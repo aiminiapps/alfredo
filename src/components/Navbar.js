@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaTelegram, FaTwitter, FaCoins } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import Image from 'next/image';
 
 const theme = {
   primary: '#FF8C00',
@@ -29,10 +30,8 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Home', href: '/' },
-    { label: 'Platform', href: '/ai' },
-    { label: 'Products', href: '/tasks' },
     { label: 'Solutions', href: '#features' },
-    { label: 'Pricing', href: '#tokenomics' }
+    { label: 'Tokenomics', href: '#tokenomics' }
   ];
 
   return (
@@ -86,36 +85,7 @@ export default function Navbar() {
               
               {/* Logo - Left */}
               <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-                <motion.div
-                  whileHover={{ rotate: 360, scale: 1.1 }}
-                  transition={{ duration: 0.6 }}
-                  className="relative p-2.5 rounded-xl"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${theme.primary}20, ${theme.primary}10)`,
-                    boxShadow: `0 4px 16px ${theme.primary}20`
-                  }}
-                >
-                  <HiSparkles className="text-xl" style={{ color: theme.primary }} />
-                  
-                  {/* Glow Effect */}
-                  <motion.div
-                    animate={{ 
-                      scale: [1, 1.3, 1],
-                      opacity: [0.3, 0.6, 0.3]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute inset-0 rounded-xl"
-                    style={{ 
-                      backgroundColor: theme.primary,
-                      filter: 'blur(10px)',
-                      opacity: 0.3
-                    }}
-                  />
-                </motion.div>
-                
-                <span className="heading text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-orange-400 group-hover:to-amber-400 transition-all duration-300">
-                  Alfredo
-                </span>
+                <Image src='/logo.png' alt='logo' width={150} height={75}/>
               </Link>
 
               {/* Center Navigation Links - Hidden on Mobile */}
@@ -208,11 +178,7 @@ export default function Navbar() {
                       }}
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                     />
-                    
-                    <span className="relative z-10 flex items-center gap-2">
-                      <FaCoins className="text-sm" />
-                      <span className="hidden sm:inline">Earn AFRD</span>
-                    </span>
+                      <span className="inline">Earn AFRD</span>
                   </motion.button>
                 </Link>
               </div>
