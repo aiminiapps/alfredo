@@ -16,8 +16,8 @@ const siteConfig = {
   name: "Alfredo AI",
   title: "Alfredo AI - AI-Powered Crypto Portfolio Analysis | BSC Blockchain",
   description: "Analyze your crypto portfolio with AI-powered insights. Get real-time portfolio analytics, risk assessment, and earn AFRD tokens by completing simple tasks on BNB Smart Chain.",
-  url: "https://alfredo.world", // Replace with your actual domain
-  ogImage: "https://alfredo.world/og-image.jpg", // Replace with your actual OG image URL
+  url: "https://www.alfredo.world", 
+  ogImage: "https://www.alfredo.world/og-image.png",
   keywords: [
     "crypto portfolio analysis",
     "AI crypto analytics",
@@ -81,22 +81,22 @@ export const metadata = {
   // Icons
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/icon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icon.png', sizes: 'any' },
+      { url: '/icon.png', type: 'image/svg+xml' },
+      { url: '/icon.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/icon.png',
     apple: [
-      { url: '/apple-icon.png' },
-      { url: '/apple-icon-180x180.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icon.png' },
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' },
     ],
     other: [
       {
         rel: 'apple-touch-icon-precomposed',
-        url: '/apple-touch-icon-precomposed.png',
+        url: '/icon.png',
       },
     ],
   },
@@ -138,15 +138,6 @@ export const metadata = {
     site: siteConfig.twitterHandle,
     creator: siteConfig.twitterHandle,
     images: [siteConfig.ogImage],
-  },
-
-  // Verification
-  verification: {
-    google: 'your-google-verification-code', // Add your Google verification code
-    yandex: 'your-yandex-verification-code', // Add your Yandex verification code
-    other: {
-      'msvalidate.01': 'your-bing-verification-code', // Add your Bing verification code
-    },
   },
 
   // Apple Web App
