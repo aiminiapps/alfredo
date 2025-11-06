@@ -98,6 +98,7 @@ export default function TokenomicsSection() {
 
   return (
     <section 
+      id='tokenomics'
       className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
     >

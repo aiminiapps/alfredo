@@ -54,6 +54,7 @@ export default function FeaturesSection() {
 
   return (
     <section 
+      id='features'
       ref={containerRef}
       className="relative py-14 sm:py-32 lg:py-40 overflow-hidden" 
       style={{ backgroundColor: theme.background }}
