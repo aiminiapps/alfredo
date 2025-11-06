@@ -1173,7 +1173,7 @@ function AIDashboard() {
                         <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Balance</th>
                         <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Value (USD)</th>
                         <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Price</th>
-                        <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">24h Change</th>
+                        {/* <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">24h Change</th> */}
                         <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Chain</th>
                       </tr>
                     </thead>
@@ -1253,7 +1253,7 @@ function AIDashboard() {
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 text-right">
+                          {/* <td className="px-6 py-4 text-right">
                             <motion.span
                               whileHover={{ scale: 1.1 }}
                               className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-bold ${
@@ -1265,7 +1265,7 @@ function AIDashboard() {
                               {token.percentChange24h >= 0 ? <FaArrowUp /> : <FaArrowDown />}
                               {Math.abs(token.percentChange24h).toFixed(2)}%
                             </motion.span>
-                          </td>
+                          </td> */}
 
                           <td className="px-6 py-4">
                             <span className="inline-block px-3 py-1 bg-[#0B0B0C] border border-[#FF7A00]/20 rounded-lg text-sm text-[#A9A9B1]">
@@ -1456,10 +1456,10 @@ function AIDashboard() {
                           <th className="text-left px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Token</th>
                           <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Entry Price</th>
                           <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Current Price</th>
-                          <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Realized P&L</th>
+                          {/* <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Realized P&L</th> */}
                           <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Unrealized P&L</th>
                           <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">Total P&L</th>
-                          <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">% Change</th>
+                          {/* <th className="text-right px-6 py-4 text-[#A9A9B1] text-sm font-semibold">% Change</th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -1486,7 +1486,7 @@ function AIDashboard() {
                             <td className="px-6 py-4 text-right text-[#F5F5F7]">
                               ${token.currentPrice.toFixed(4)}
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            {/* <td className="px-6 py-4 text-right">
                               <span
                                 className={`font-bold ${
                                   token.realizedPnL >= 0 ? 'text-green-400' : 'text-red-400'
@@ -1494,7 +1494,7 @@ function AIDashboard() {
                               >
                                 {token.realizedPnL >= 0 ? '+' : ''}${token.realizedPnL.toFixed(2)}
                               </span>
-                            </td>
+                            </td> */}
                             <td className="px-6 py-4 text-right">
                               <span
                                 className={`font-bold ${
@@ -1513,7 +1513,7 @@ function AIDashboard() {
                                 {token.totalPnL >= 0 ? '+' : ''}${token.totalPnL.toFixed(2)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            {/* <td className="px-6 py-4 text-right">
                               <motion.span
                                 whileHover={{ scale: 1.1 }}
                                 className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-bold ${
@@ -1525,7 +1525,7 @@ function AIDashboard() {
                                 {token.profitPercent >= 0 ? <FaArrowUp /> : <FaArrowDown />}
                                 {Math.abs(token.profitPercent).toFixed(1)}%
                               </motion.span>
-                            </td>
+                            </td> */}
                           </motion.tr>
                         ))}
                       </tbody>
