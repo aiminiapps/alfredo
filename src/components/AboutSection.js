@@ -247,8 +247,8 @@ export default function AboutSection() {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0}}
+                  whileInView={{ opacity: 1}}
                   viewport={{ once: true }}
                   transition={{ 
                     delay: 0.5 + index * 0.1,
