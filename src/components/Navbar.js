@@ -1,4 +1,3 @@
-// components/Navbar.jsx - Premium Floating Navbar
 'use client'
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -18,90 +17,135 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
   
-  const navOpacity = useTransform(scrollY, [0, 100], [0.95, 1]);
-  const navBlur = useTransform(scrollY, [0, 100], [10, 20]);
+  const navY = useTransform(scrollY, [0, 100], [0, 0]);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 20);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  return (
-    <>
-      {/* Spacer to prevent content jump */}
-      <div className="h-20" />
+  const navLinks = [
+    { label: 'Home', href: '/' },
+    { label: 'Platform', href: '/ai' },
+    { label: 'Products', href: '/tasks' },
+    { label: 'Solutions', href: '#features' },
+    { label: 'Pricing', href: '#tokenomics' }
+  ];
 
-      {/* Floating Navbar */}
-      <motion.nav
-        style={{ 
-          opacity: navOpacity,
-        }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl"
+  return (
+    <motion.nav
+      style={{ y: navY }}
+      className="fixed top-0 left-0 right-0 z-50 px-4 py-4"
+    >
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-7xl mx-auto"
       >
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className={`relative rounded-2xl border transition-all duration-500 ${
+        {/* Liquid Glass Container */}
+        <div 
+          className={`relative rounded-2xl transition-all duration-500 ${
             isScrolled ? 'shadow-2xl' : 'shadow-xl'
           }`}
           style={{
-            backgroundColor: `${theme.cardBg}${isScrolled ? 'F5' : 'E8'}`,
-            borderColor: `${theme.border}`,
-            backdropFilter: `blur(${isScrolled ? '20px' : '15px'})`
+            background: `linear-gradient(135deg, 
+              rgba(26, 18, 12, 0.7) 0%, 
+              rgba(26, 18, 12, 0.5) 50%, 
+              rgba(26, 18, 12, 0.7) 100%)`,
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            border: `1px solid rgba(255, 140, 0, 0.1)`,
+            boxShadow: `
+              0 8px 32px 0 rgba(0, 0, 0, 0.37),
+              inset 0 1px 0 0 rgba(255, 140, 0, 0.1),
+              inset 0 -1px 0 0 rgba(0, 0, 0, 0.2)
+            `
           }}
         >
-          {/* Glow Effect */}
-          <div 
-            className="absolute -inset-[1px] rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background: `linear-gradient(90deg, ${theme.primary}20, transparent, ${theme.primary}20)`,
-              filter: 'blur(8px)'
+          {/* Animated Gradient Border */}
+          <motion.div
+            animate={{
+              background: [
+                `linear-gradient(90deg, transparent, ${theme.primary}30, transparent)`,
+                `linear-gradient(90deg, transparent, ${theme.secondary}30, transparent)`,
+                `linear-gradient(90deg, transparent, ${theme.primary}30, transparent)`
+              ]
             }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 rounded-2xl opacity-50 pointer-events-none"
+            style={{ filter: 'blur(8px)' }}
           />
 
           {/* Content */}
-          <div className="relative px-6 py-4">
-            <div className="flex items-center justify-between gap-8">
+          <div className="relative px-6 py-3">
+            <div className="flex items-center justify-between gap-4">
               
-              {/* Logo - Left Side */}
-              <Link href="/" className="flex items-center gap-3 group">
+              {/* Logo - Left */}
+              <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
                 <motion.div
                   whileHover={{ rotate: 360, scale: 1.1 }}
                   transition={{ duration: 0.6 }}
-                  className="relative p-2 rounded-xl"
-                  style={{ backgroundColor: `${theme.primary}15` }}
+                  className="relative p-2.5 rounded-xl"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${theme.primary}20, ${theme.primary}10)`,
+                    boxShadow: `0 4px 16px ${theme.primary}20`
+                  }}
                 >
-                  {/* Sparkle Effect */}
+                  <HiSparkles className="text-xl" style={{ color: theme.primary }} />
+                  
+                  {/* Glow Effect */}
                   <motion.div
                     animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.5, 1, 0.5]
+                      scale: [1, 1.3, 1],
+                      opacity: [0.3, 0.6, 0.3]
                     }}
                     transition={{ duration: 2, repeat: Infinity }}
                     className="absolute inset-0 rounded-xl"
                     style={{ 
                       backgroundColor: theme.primary,
-                      filter: 'blur(8px)',
+                      filter: 'blur(10px)',
                       opacity: 0.3
                     }}
                   />
-                  <HiSparkles className="text-xl relative z-10" style={{ color: theme.primary }} />
                 </motion.div>
                 
-                <span className="heading text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-400 group-hover:to-amber-400 group-hover:bg-clip-text transition-all duration-300 hidden sm:inline">
+                <span className="heading text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-orange-400 group-hover:to-amber-400 transition-all duration-300">
                   Alfredo
                 </span>
               </Link>
 
-              {/* Right Side - Social Links & CTA */}
-              <div className="flex items-center gap-3">
+              {/* Center Navigation Links - Hidden on Mobile */}
+              <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
+                {navLinks.map((link, index) => (
+                  <Link key={index} href={link.href}>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
+                        link.label === 'Home' 
+                          ? 'text-white' 
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                      style={{
+                        background: link.label === 'Home' 
+                          ? `linear-gradient(135deg, ${theme.primary}15, transparent)` 
+                          : 'transparent'
+                      }}
+                    >
+                      {link.label}
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Right Side - Social & CTA */}
+              <div className="flex items-center gap-2 flex-shrink-0">
                 
-                {/* Social Icons */}
+                {/* Social Icons - Hidden on Small Screens */}
                 <div className="hidden md:flex items-center gap-2">
                   {/* Telegram */}
                   <motion.a
@@ -110,15 +154,15 @@ export default function Navbar() {
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-3 rounded-xl border transition-all duration-300 group"
+                    className="p-2.5 rounded-lg transition-all duration-300 group"
                     style={{
-                      backgroundColor: `${theme.cardBg}80`,
-                      borderColor: theme.border
+                      background: `linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent)`,
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}
                   >
                     <FaTelegram 
-                      className="text-lg transition-colors duration-300 group-hover:text-[#0088cc]" 
-                      style={{ color: '#6B7280' }}
+                      className="text-base transition-colors duration-300 group-hover:text-[#0088cc]" 
+                      style={{ color: '#9CA3AF' }}
                     />
                   </motion.a>
 
@@ -129,31 +173,25 @@ export default function Navbar() {
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-3 rounded-xl border transition-all duration-300 group"
+                    className="p-2.5 rounded-lg transition-all duration-300 group"
                     style={{
-                      backgroundColor: `${theme.cardBg}80`,
-                      borderColor: theme.border
+                      background: `linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent)`,
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}
                   >
                     <FaTwitter 
-                      className="text-lg transition-colors duration-300 group-hover:text-[#1DA1F2]" 
-                      style={{ color: '#6B7280' }}
+                      className="text-base transition-colors duration-300 group-hover:text-[#1DA1F2]" 
+                      style={{ color: '#9CA3AF' }}
                     />
                   </motion.a>
                 </div>
 
-                {/* Divider */}
-                <div 
-                  className="hidden md:block w-px h-8"
-                  style={{ backgroundColor: theme.border }}
-                />
-
                 {/* Earn AFRD Button */}
                 <Link href="/tasks">
                   <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: `0 10px 40px ${theme.primary}50` }}
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
-                    className="group relative px-6 py-3 rounded-xl font-bold text-white text-sm overflow-hidden"
+                    className="group relative px-5 py-2.5 rounded-lg font-semibold text-sm text-white overflow-hidden"
                     style={{
                       background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
                       boxShadow: `0 4px 20px ${theme.primary}40`
@@ -161,102 +199,52 @@ export default function Navbar() {
                   >
                     {/* Shimmer Effect */}
                     <motion.div
-                      animate={{
-                        x: ['-100%', '200%']
-                      }}
+                      animate={{ x: ['-100%', '200%'] }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
                         repeatDelay: 1,
                         ease: "easeInOut"
                       }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                     />
                     
-                    {/* Content */}
                     <span className="relative z-10 flex items-center gap-2">
-                      <FaCoins className="text-base" />
+                      <FaCoins className="text-sm" />
                       <span className="hidden sm:inline">Earn AFRD</span>
-                      <span className="sm:hidden">Earn</span>
                     </span>
-
-                    {/* Glow on Hover */}
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: `radial-gradient(circle at center, ${theme.primary}40, transparent 70%)`
-                      }}
-                    />
                   </motion.button>
                 </Link>
-
-                {/* Mobile Menu Button (Optional) */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="md:hidden p-3 rounded-xl border"
-                  style={{
-                    backgroundColor: `${theme.cardBg}80`,
-                    borderColor: theme.border
-                  }}
-                >
-                  <div className="space-y-1.5">
-                    <motion.div 
-                      className="w-5 h-0.5 rounded-full"
-                      style={{ backgroundColor: theme.primary }}
-                    />
-                    <motion.div 
-                      className="w-5 h-0.5 rounded-full"
-                      style={{ backgroundColor: theme.primary }}
-                    />
-                    <motion.div 
-                      className="w-3 h-0.5 rounded-full"
-                      style={{ backgroundColor: theme.primary }}
-                    />
-                  </div>
-                </motion.button>
               </div>
             </div>
           </div>
 
-          {/* Bottom Glow Line */}
+          {/* Bottom Shine Line */}
           <motion.div
             animate={{
-              opacity: [0.3, 0.6, 0.3],
-              scaleX: [0.8, 1, 0.8]
+              opacity: [0.2, 0.5, 0.2],
+              scaleX: [0.7, 1, 0.7]
             }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px"
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-px"
             style={{
-              background: `linear-gradient(90deg, transparent, ${theme.primary}, transparent)`
+              background: `linear-gradient(90deg, transparent, ${theme.primary}60, transparent)`
             }}
           />
-        </motion.div>
 
-        {/* Floating Particles */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full pointer-events-none"
-            style={{ 
-              backgroundColor: theme.primary,
-              left: `${30 + i * 20}%`,
-              top: '50%'
-            }}
-            animate={{
-              y: [-20, 20, -20],
-              opacity: [0.2, 0.6, 0.2],
-              scale: [1, 1.5, 1]
-            }}
-            transition={{
-              duration: 3 + i,
-              repeat: Infinity,
-              delay: i * 0.5,
-              ease: "easeInOut"
+          {/* Liquid Glass Reflection */}
+          <div 
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              background: `linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.05) 100%)`,
+              mixBlendMode: 'overlay'
             }}
           />
-        ))}
-      </motion.nav>
-    </>
+        </div>
+      </motion.div>
+    </motion.nav>
   );
 }
