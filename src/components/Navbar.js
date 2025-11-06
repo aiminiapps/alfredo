@@ -152,7 +152,7 @@ export default function Navbar() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
-                    className="group relative px-5 py-2.5 rounded-lg font-semibold text-sm text-white overflow-hidden"
+                    className="group relative cursor-pointer px-5 py-2.5 rounded-lg font-semibold text-sm text-black overflow-hidden"
                     style={{
                       background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
                       boxShadow: `0 4px 20px ${theme.primary}40`
