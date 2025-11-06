@@ -76,18 +76,16 @@ export default function Hero() {
           </motion.div>
 
           <h1 className="text-2xl heading md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
-            The First{' '}
+          The Way to{' '}
             <span className="bg-gradient-to-r from-[#FF6A00] via-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent">
-              AI Crypto
+            Understand
             </span> 
             <br />
-            <span className="text-white">Portfolio Analyzer!</span>
+            <span className="text-white">Your Crypto Portfolio!</span>
           </h1>
 
           <p className="text-base text-balance md:text-xl text-gray-200 max-w-2xl mx-auto">
-            Welcome to Alfredo the ultimate fusion of cutting edge AI and
-            <br className="hidden md:block" />
-            the vibrant, powerful world of crypto analytics!
+          Alfredo analyzes your wallet and reveals your investment DNA powered by AI.
           </p>
         </motion.div>
 
