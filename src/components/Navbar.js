@@ -2,9 +2,9 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaTelegram, FaTwitter, FaCoins } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
 import Image from 'next/image';
+import { RiTwitterXLine } from "react-icons/ri";
+import { LiaTelegram } from "react-icons/lia";
 
 const theme = {
   primary: '#FF8C00',
@@ -95,16 +95,7 @@ export default function Navbar() {
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
-                        link.label === 'Home' 
-                          ? 'text-white' 
-                          : 'text-gray-400 hover:text-white'
-                      }`}
-                      style={{
-                        background: link.label === 'Home' 
-                          ? `linear-gradient(135deg, ${theme.primary}15, transparent)` 
-                          : 'transparent'
-                      }}
+                      className={`px-4 py-2 rounded-lg font-medium text-base transition-all duration-300 text-gray-300`}
                     >
                       {link.label}
                     </motion.div>
@@ -130,8 +121,8 @@ export default function Navbar() {
                       border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}
                   >
-                    <FaTelegram 
-                      className="text-base transition-colors duration-300 group-hover:text-[#0088cc]" 
+                    <LiaTelegram 
+                      className="text-lg transition-colors duration-300 group-hover:text-[#0088cc]" 
                       style={{ color: '#9CA3AF' }}
                     />
                   </motion.a>
@@ -149,8 +140,8 @@ export default function Navbar() {
                       border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}
                   >
-                    <FaTwitter 
-                      className="text-base transition-colors duration-300 group-hover:text-[#1DA1F2]" 
+                    <RiTwitterXLine 
+                      className="text-lg transition-colors duration-300 group-hover:text-[#1DA1F2]" 
                       style={{ color: '#9CA3AF' }}
                     />
                   </motion.a>
