@@ -740,12 +740,7 @@ export default function AlfredoTaskCenter() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Clean Header */}
         <motion.div {...fadeIn} className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
-            style={{ backgroundColor: `${theme.primary}20` }}
-          >
-            <FaCoins size={32} style={{ color: theme.primary }} />
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3">Task Center</h1>
+          <h1 className="text-4xl heading sm:text-5xl font-bold text-white mb-3">Task Center</h1>
           <p style={{ color: theme.textSecondary }} className="text-lg">
             Complete tasks and earn AFRD tokens on BSC
           </p>
@@ -767,7 +762,7 @@ export default function AlfredoTaskCenter() {
               <FaWallet size={40} style={{ color: theme.primary }} />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">Connect Your Wallet</h2>
-            <p style={{ color: theme.textSecondary }} className="mb-6 max-w-md mx-auto">
+            <p style={{ color: theme.textSecondary }} className="mb-6 text-balance max-w-md mx-auto">
               Connect MetaMask to start earning. New users receive 10 tokens instantly!
             </p>
             <button
@@ -862,7 +857,7 @@ export default function AlfredoTaskCenter() {
 
             {/* Tasks List */}
             <div className="space-y-4 mb-12">
-              <h2 className="text-2xl font-bold text-white mb-6">Available Tasks</h2>
+              <h2 className="text-2xl font-bold text-white heading mb-6">Available Tasks</h2>
               {Object.values(taskDefinitions).map((task, index) => {
                 const isCompleted = tasks[task.id]?.completed;
                 const isProcessing = processingTask === task.id;
