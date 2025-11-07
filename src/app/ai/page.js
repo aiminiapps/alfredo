@@ -1294,7 +1294,7 @@ function AIDashboard() {
                       whileHover={{ scale: 1.02, y: -8 }}
                       className="bg-gradient-to-br from-[#1A1A1C] to-[#0B0B0C] border border-[#FF7A00]/20 rounded-2xl p-6 hover:border-[#FF7A00] transition-all backdrop-blur-xl relative overflow-hidden group cursor-pointer"
                     >
-                      {/* Animated background */}
+                      {/* Animated background */}  
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-br from-[#FF7A00]/0 to-[#FFA64D]/0 group-hover:from-[#FF7A00]/10 group-hover:to-[#FFA64D]/5 transition-all duration-500"
                       />
