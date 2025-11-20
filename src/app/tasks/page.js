@@ -388,10 +388,10 @@ export default function AlfredoTaskCenter() {
     followX: {
       id: 'followX',
       title: 'Follow on X',
-      description: 'Follow @Alfredo_AI on X for portfolio insights',
+      description: 'Follow @AI_UR_Alfredo on X for portfolio insights',
       reward: 100,
       icon: FaTwitter,
-      action: 'https://twitter.com/intent/follow?screen_name=Alfredo_AI',
+      action: 'https://x.com/AI_UR_Alfredo',
       type: 'social',
       difficulty: 'easy'
     },
@@ -401,7 +401,7 @@ export default function AlfredoTaskCenter() {
       description: 'Like our latest post about crypto portfolio analysis',
       reward: 50,
       icon: FaThumbsUp,
-      action: 'https://x.com/Alfredo_AI',
+      action: 'https://x.com/AI_UR_Alfredo',
       type: 'social',
       difficulty: 'easy'
     },
@@ -411,7 +411,7 @@ export default function AlfredoTaskCenter() {
       description: 'Share your portfolio analysis experience',
       reward: 75,
       icon: FaComment,
-      action: 'https://x.com/Alfredo_AI',
+      action: 'https://x.com/AI_UR_Alfredo',
       type: 'social',
       difficulty: 'medium'
     },
@@ -421,7 +421,7 @@ export default function AlfredoTaskCenter() {
       description: 'Help us spread the word about smart portfolio management',
       reward: 60,
       icon: FaRetweet,
-      action: 'https://x.com/Alfredo_AI',
+      action: 'https://x.com/AI_UR_Alfredo/status/1991318393442734394?s=20',
       type: 'social',
       difficulty: 'easy'
     },
@@ -431,7 +431,7 @@ export default function AlfredoTaskCenter() {
       description: 'Join our portfolio analysis community on Telegram',
       reward: 80,
       icon: FaTelegram,
-      action: 'https://t.me/alfredo_community',
+      action: 'https://t.me/AI_UR_Alfredo',
       type: 'social',
       difficulty: 'easy'
     },
