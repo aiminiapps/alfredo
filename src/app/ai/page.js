@@ -13,6 +13,7 @@ import {
   FaTimes, FaExpand, FaMagic, FaChevronRight,
    FaBullseye, FaUser, FaExchangeAlt, FaFilter, FaCompass, FaClock, FaSort
 } from 'react-icons/fa';
+import { RiListCheck3 } from "react-icons/ri";
 import {
   PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid,
@@ -665,7 +666,7 @@ function AIDashboard() {
               { id: 'chains', icon: FaLayerGroup, label: 'Chains' },
               { id: 'pnl', icon: FaTrophy, label: 'P&L' },
               { id: 'insights', icon: FaBrain, label: 'AI Insights', badge: 'New' },
-              { id: 'tasks', icon: FaBrain, label: 'Tasks', badge: 'New' }
+              { id: 'tasks', icon: RiListCheck3, label: 'Tasks', badge: 'New' }
             ].map((tab) => (
               <motion.button
                 key={tab.id}
