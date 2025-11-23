@@ -1,36 +1,53 @@
 'use client';
-
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FaWallet, FaSpinner, FaCheckCircle, FaTimes, FaCopy,
-  FaTwitter, FaTelegram, FaRetweet, FaComment, FaThumbsUp, FaShare,
-  FaCoins, FaTrophy, FaFire, FaChartLine, FaNewspaper,
-  FaExternalLinkAlt, FaBolt, FaStar
+import { toast, Toaster } from 'sonner';
+import ReactMarkdown from 'react-markdown';
+import { 
+  FaWallet, FaChartLine, FaRobot, FaPaperPlane, FaCopy, FaChartPie, 
+  FaFire, FaLightbulb, FaBolt, FaTrophy, FaRocket, FaChartBar, 
+  FaLayerGroup, FaDownload, FaShare, FaStar, FaGlobe, FaBrain, 
+  FaCheckCircle, FaExclamationTriangle, FaHistory, FaCoins, 
+  FaShieldAlt, FaArrowUp, FaArrowDown, FaHome, FaTimes, FaExpand, 
+  FaMagic, FaChevronRight, FaBullseye, FaUser, FaExchangeAlt, 
+  FaFilter, FaCompass, FaClock, FaSort, FaTwitter, FaSpinner,
+  FaTelegram, FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp,
+  FaInfoCircle, FaGift, FaCheckDouble, FaEye
 } from 'react-icons/fa';
-import CryptoRecommendations from '@/components/CryptoRecommendations';
-import NewsTerminal from '@/components/NewsTerminal';
+import { TbTarget } from 'react-icons/tb';
+import { BiCoin, BiData, BiShield } from 'react-icons/bi';
+import { HiSparkles } from 'react-icons/hi';
+import { 
+  PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, 
+  PolarAngleAxis, PolarRadiusAxis, Radar, XAxis, YAxis, 
+  CartesianGrid, Tooltip, ResponsiveContainer 
+} from 'recharts';
 
-// Storage Configuration
-const STORAGE_KEY = 'somnus-app-data';
-
-// Minimal Theme
+// Theme
 const theme = {
-  bg: 'bg-black',
-  card: 'bg-white/5',
-  border: 'border-white/10',
-  text: 'text-white',
-  textSecondary: 'text-gray-400',
-  accent: 'bg-white',
-  accentHover: 'hover:bg-white/90'
+  primary: '#FF8C00',
+  secondary: '#FFB347',
+  success: '#4CD964',
+  error: '#FF453A',
+  warning: '#FFCC00',
+  info: '#5E5CE6',
+  background: '#0D0A07',
+  cardBg: '#1A120C',
+  border: '#2A1E14',
+  text: '#F5F5F5',
+  textSecondary: '#A9A9B1'
 };
 
-// Smooth animations
+// Storage Configuration
+const STORAGE_KEY = 'alfredo-task-center';
+const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT_ADDRESS || '0x...';
+
+// Animations
 const fadeIn = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-  transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
+  transition: { duration: 0.4, ease: "easeOut" }
 };
 
 // Storage Utilities
@@ -56,21 +73,9 @@ const initStorage = () => {
     tasks: {},
     stats: {
       totalEarned: 0,
-      tasksCompleted: 0
-    },
-    premium: {
-      cryptoMarket: {
-        isUnlocked: false,
-        plan: null,
-        expiresAt: null,
-        trialUsed: false
-      },
-      cryptoNews: {
-        isUnlocked: false,
-        plan: null,
-        expiresAt: null,
-        trialUsed: false
-      }
+      tasksCompleted: 0,
+      currentStreak: 0,
+      lastCompletedDate: null
     }
   };
 
@@ -98,6 +103,7 @@ const useWallet = () => {
     isConnecting: false,
     isConnected: false,
     balance: '0',
+    tokenBalance: '0',
     error: null,
     isInitialized: false
   });
@@ -115,7 +121,7 @@ const useWallet = () => {
         window.location.href = `https://metamask.app.link/dapp/${window.location.host}`;
         return;
       }
-      alert('Please install MetaMask to continue');
+      alert('🔥 Please install MetaMask extension!');
       return;
     }
 
@@ -126,18 +132,17 @@ const useWallet = () => {
       const ethers = ethersModule.default || ethersModule;
 
       const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
+        method: 'eth_requestAccounts',
       });
 
       if (!accounts || accounts.length === 0) {
         throw new Error('No accounts found');
       }
 
-      // Switch to BSC
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x38' }]
+          params: [{ chainId: '0x38' }],
         });
       } catch (switchError) {
         if (switchError.code === 4902) {
@@ -146,16 +151,19 @@ const useWallet = () => {
             params: [{
               chainId: '0x38',
               chainName: 'BNB Smart Chain',
-              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+              nativeCurrency: {
+                name: 'BNB',
+                symbol: 'BNB',
+                decimals: 18
+              },
               rpcUrls: ['https://bsc-dataseed1.binance.org/'],
-              blockExplorerUrls: ['https://bscscan.com/']
-            }]
+              blockExplorerUrls: ['https://bscscan.com/'],
+            }],
           });
         }
       }
 
       let provider, signer, balance = '0';
-
       if (ethers.BrowserProvider) {
         provider = new ethers.BrowserProvider(window.ethereum);
         signer = await provider.getSigner();
@@ -183,6 +191,7 @@ const useWallet = () => {
         isConnecting: false,
         isConnected: true,
         balance,
+        tokenBalance: '0',
         error: null,
         isInitialized: true
       });
@@ -203,6 +212,7 @@ const useWallet = () => {
       if (!receivedBonus) {
         await sendWelcomeBonus(accounts[0], signer);
       }
+
     } catch (error) {
       console.error('Connection failed:', error);
       setWallet(prev => ({
@@ -220,7 +230,7 @@ const useWallet = () => {
     try {
       const nonce = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const expiry = Math.floor(Date.now() / 1000) + 3600;
-      const message = `Welcome to Somnus!\nAddress: ${address}\nNonce: ${nonce}\nExpiry: ${expiry}`;
+      const message = `Welcome to Alfredo!\nAddress: ${address}\nNonce: ${nonce}\nExpiry: ${expiry}`;
 
       const signature = await signer.signMessage(message);
 
@@ -254,7 +264,9 @@ const useWallet = () => {
           },
           stats: {
             totalEarned: 10,
-            tasksCompleted: 0
+            tasksCompleted: 0,
+            currentStreak: 0,
+            lastCompletedDate: null
           }
         });
       }
@@ -272,6 +284,7 @@ const useWallet = () => {
       isConnecting: false,
       isConnected: false,
       balance: '0',
+      tokenBalance: '0',
       error: null,
       isInitialized: true
     });
@@ -300,14 +313,13 @@ const useWallet = () => {
             const ethersModule = await import('ethers');
             const ethers = ethersModule.default || ethersModule;
 
-            const accounts = await window.ethereum.request({
-              method: 'eth_accounts'
-            });
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
 
             if (accounts.length > 0 && 
                 accounts[0].toLowerCase() === saved.wallet.address.toLowerCase()) {
+              
               let provider, signer, balance = saved.wallet.balance;
-
+              
               if (ethers.BrowserProvider) {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 signer = await provider.getSigner();
@@ -336,6 +348,7 @@ const useWallet = () => {
                   isConnecting: false,
                   isConnected: true,
                   balance,
+                  tokenBalance: '0',
                   error: null,
                   isInitialized: true
                 });
@@ -356,34 +369,64 @@ const useWallet = () => {
     };
 
     reconnect();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  return {
-    ...wallet,
-    connectWallet,
-    disconnect,
-    welcomeBonusStatus
-  };
+  return { ...wallet, connectWallet, disconnect, welcomeBonusStatus };
 };
 
-// Main Component
-export default function SomnusAI() {
+// Main Dashboard Component
+function AlfredoDashboard() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const wallet = useWallet();
-  const [activeTab, setActiveTab] = useState('tasks');
+  
+  const walletAddress = searchParams.get('wallet');
+  const network = searchParams.get('network') || 'ethereum';
+
+  // AI Dashboard State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [walletData, setWalletData] = useState(null);
+  const [aiInsights, setAiInsights] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [userInput, setUserInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Task Center State
   const [tasks, setTasks] = useState({});
   const [processingTask, setProcessingTask] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [showTokenInfo, setShowTokenInfo] = useState(false);
+  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' or 'tasks'
+
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  useEffect(() => {
+    if (walletAddress && !isScanning && !scanComplete) {
+      scanWallet();
+    }
+  }, [walletAddress]);
 
   // Task Definitions
   const taskDefinitions = useMemo(() => ({
     followX: {
       id: 'followX',
       title: 'Follow on X',
-      description: 'Follow @Somnus on X',
+      description: 'Follow @AI_UR_Alfredo for insights',
       reward: 100,
       icon: FaTwitter,
-      action: 'https://x.com/somnusai'
+      action: 'https://x.com/AI_UR_Alfredo',
+      type: 'social',
+      difficulty: 'easy'
     },
     likeX: {
       id: 'likeX',
@@ -391,23 +434,29 @@ export default function SomnusAI() {
       description: 'Like our latest post',
       reward: 50,
       icon: FaThumbsUp,
-      action: 'https://x.com/somnusai'
+      action: 'https://x.com/AI_UR_Alfredo',
+      type: 'social',
+      difficulty: 'easy'
     },
     commentX: {
       id: 'commentX',
       title: 'Comment',
-      description: 'Share your thoughts',
+      description: 'Share your experience',
       reward: 75,
       icon: FaComment,
-      action: 'https://x.com/somnusai'
+      action: 'https://x.com/AI_UR_Alfredo',
+      type: 'social',
+      difficulty: 'medium'
     },
     retweetX: {
       id: 'retweetX',
       title: 'Retweet',
-      description: 'Spread the word',
+      description: 'Help us spread the word',
       reward: 60,
       icon: FaRetweet,
-      action: 'https://x.com/somnusai'
+      action: 'https://x.com/AI_UR_Alfredo',
+      type: 'social',
+      difficulty: 'easy'
     },
     joinTelegram: {
       id: 'joinTelegram',
@@ -415,15 +464,19 @@ export default function SomnusAI() {
       description: 'Join our community',
       reward: 80,
       icon: FaTelegram,
-      action: 'https://t.me/somnusai'
+      action: 'https://t.me/AI_UR_Alfredo',
+      type: 'social',
+      difficulty: 'easy'
     },
     shareX: {
       id: 'shareX',
       title: 'Share',
-      description: 'Share with friends',
+      description: 'Share with your network',
       reward: 90,
       icon: FaShare,
-      action: 'https://twitter.com/intent/tweet?text=Check%20out%20Somnus'
+      action: 'https://twitter.com/intent/tweet?text=Check%20out%20Alfredo',
+      type: 'social',
+      difficulty: 'medium'
     }
   }), []);
 
@@ -434,7 +487,7 @@ export default function SomnusAI() {
     }
   }, []);
 
-  const stats = useMemo(() => {
+  const taskStats = useMemo(() => {
     const saved = getStorage();
     const completed = Object.values(tasks).filter(t => t.completed).length;
     const total = Object.keys(taskDefinitions).length;
@@ -444,13 +497,59 @@ export default function SomnusAI() {
     return { completed, total, earned, progress };
   }, [tasks, taskDefinitions]);
 
+  // Scan Wallet Function
+  const scanWallet = async () => {
+    setIsScanning(true);
+    setScanComplete(false);
+
+    try {
+      toast.loading('Scanning wallet...', { id: 'scan' });
+      
+      const scanResponse = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet: walletAddress, chains: [network] })
+      });
+
+      if (!scanResponse.ok) throw new Error('Scan failed');
+      
+      const scanData = await scanResponse.json();
+      if (!scanData.success) throw new Error(scanData.error);
+      
+      setWalletData(scanData);
+      toast.success('Wallet scanned!', { id: 'scan' });
+
+      toast.loading('Generating AI insights...', { id: 'ai' });
+      
+      const insightsResponse = await fetch('/api/ai-insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          analytics: scanData.analytics, 
+          wallet: walletAddress 
+        })
+      });
+
+      if (insightsResponse.ok) {
+        const insightsData = await insightsResponse.json();
+        setAiInsights(insightsData);
+        toast.success('AI analysis complete!', { id: 'ai' });
+      }
+
+      setScanComplete(true);
+    } catch (error) {
+      console.error('Scan error:', error);
+      toast.error(error.message || 'Failed to scan wallet', { id: 'scan' });
+      setTimeout(() => router.push('/'), 2000);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  // Complete Task Function
   const completeTask = useCallback(async (taskId) => {
     if (!wallet.isConnected || !wallet.signer) {
-      setNotification({
-        type: 'error',
-        message: 'Connect wallet to earn tokens'
-      });
-      setTimeout(() => setNotification(null), 3000);
+      toast.error('Please connect your wallet first!');
       return;
     }
 
@@ -466,7 +565,7 @@ export default function SomnusAI() {
     try {
       const nonce = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const expiry = Math.floor(Date.now() / 1000) + 3600;
-      const message = `Complete task: ${taskId}\nAddress: ${wallet.address}\nReward: ${task.reward}\nNonce: ${nonce}\nExpiry: ${expiry}`;
+      const message = `Complete task: ${taskId}\nAddress: ${wallet.address}\nReward: ${task.reward} AFRD\nNonce: ${nonce}\nExpiry: ${expiry}`;
 
       const signature = await wallet.signer.signMessage(message);
 
@@ -504,378 +603,439 @@ export default function SomnusAI() {
           tasks: newTasks,
           stats: {
             totalEarned: saved.stats.totalEarned + task.reward,
-            tasksCompleted: saved.stats.tasksCompleted + 1
+            tasksCompleted: saved.stats.tasksCompleted + 1,
+            currentStreak: saved.stats.currentStreak + 1,
+            lastCompletedDate: Date.now()
           }
         });
 
-        setNotification({
-          type: 'success',
-          message: `+${task.reward} SOMNUS earned!`,
-          txHash: data.txHash
-        });
-        setTimeout(() => setNotification(null), 5000);
+        toast.success(`+${task.reward} AFRD earned!`);
       } else {
         throw new Error(data.error || 'Transaction failed');
       }
     } catch (error) {
-      setNotification({
-        type: 'error',
-        message: `Failed: ${error.message}`
-      });
-      setTimeout(() => setNotification(null), 3000);
+      toast.error(`Failed: ${error.message}`);
     } finally {
       setProcessingTask(null);
     }
   }, [wallet, tasks, taskDefinitions]);
 
-  const copyAddress = () => {
-    navigator.clipboard.writeText(wallet.address);
-    setNotification({ type: 'success', message: 'Address copied!' });
-    setTimeout(() => setNotification(null), 2000);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
   };
 
-  if (!wallet.isInitialized) {
+  // Loading State
+  if (!wallet.isInitialized || (walletAddress && isScanning)) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <FaSpinner className="text-4xl text-white animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="inline-block mb-4"
+          >
+            <HiSparkles size={48} style={{ color: theme.primary }} />
+          </motion.div>
+          <p className="text-white text-lg font-medium">
+            {walletAddress ? 'Analyzing Portfolio...' : 'Loading...'}
+          </p>
+        </div>
       </div>
     );
   }
 
+  // Main Render
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
-      {/* Notification */}
-      <AnimatePresence>
-        {notification && (
-          <motion.div
-            {...fadeIn}
-            className="fixed top-4 right-4 z-50 max-w-sm"
-          >
-            <div className={`p-4 rounded-lg border backdrop-blur-sm ${
-              notification.type === 'success'
-                ? 'bg-green-500/10 border-green-500/30'
-                : 'bg-red-500/10 border-red-500/30'
-            }`}>
-              <div className="flex items-start gap-3">
-                {notification.type === 'success' ? (
-                  <FaCheckCircle className="text-green-400 mt-0.5" />
-                ) : (
-                  <FaTimes className="text-red-400 mt-0.5" />
-                )}
-                <div className="flex-1">
-                  <p className="text-sm text-white">{notification.message}</p>
-                  {notification.txHash && (
-                    <a
-                      href={`https://bscscan.com/tx/${notification.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-white flex items-center gap-1 mt-1"
-                    >
-                      View TX <FaExternalLinkAlt className="text-[10px]" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="min-h-screen" style={{ backgroundColor: theme.background, color: theme.text }}>
+      <Toaster position="top-right" theme="dark" />
 
       {/* Welcome Bonus Modal */}
       <AnimatePresence>
         {wallet.welcomeBonusStatus.sending && (
           <motion.div
-            {...fadeIn}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
           >
-            <div className="bg-white/5 border border-white/10 rounded-xl p-8 max-w-md w-full text-center">
-              <FaSpinner className="text-5xl text-white animate-spin mx-auto mb-4" />
-              <h3 className="text-xl font-light text-white mb-2">
-                Sending Welcome Bonus
-              </h3>
-              <p className="text-gray-400 text-sm">
-                10 SOMNUS tokens incoming...
-              </p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-2xl p-8 max-w-sm w-full text-center"
+              style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="inline-block mb-4"
+              >
+                <HiSparkles size={56} style={{ color: theme.primary }} />
+              </motion.div>
+              <h3 className="text-xl font-bold text-white mb-2">Processing Bonus</h3>
+              <p style={{ color: theme.textSecondary }}>Sending 10 AFRD...</p>
+            </motion.div>
           </motion.div>
         )}
 
-        {wallet.welcomeBonusStatus.sent && !wallet.welcomeBonusStatus.sending && (
+        {wallet.welcomeBonusStatus.sent && (
           <motion.div
-            {...fadeIn}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => {
-              setWallet(prev => ({
-                ...prev,
-                welcomeBonusStatus: { sending: false, sent: false, txHash: null }
-              }));
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
           >
-            <div className="bg-white/5 border border-white/10 rounded-xl p-8 max-w-md w-full text-center">
-              <FaCheckCircle className="text-5xl text-green-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-light text-white mb-2">
-                Welcome Bonus Received!
-              </h3>
-              <p className="text-gray-400 mb-4">
-                +10 SOMNUS tokens added to your wallet
-              </p>
-              {wallet.welcomeBonusStatus.txHash && (
-                <a
-                  href={`https://bscscan.com/tx/${wallet.welcomeBonusStatus.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-2"
-                >
-                  View Transaction <FaExternalLinkAlt />
-                </a>
-              )}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-2xl p-8 max-w-sm w-full text-center"
+              style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+            >
+              <FaGift size={56} style={{ color: theme.success }} className="mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Welcome!</h3>
+              <p className="text-xl font-bold mb-4" style={{ color: theme.success }}>+10 AFRD received!</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-3 rounded-xl font-semibold text-white"
+                style={{ backgroundColor: theme.primary }}
+              >
+                Start Earning More
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-40">
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="sticky top-0 z-40 backdrop-blur-md"
+        style={{
+          backgroundColor: `${theme.cardBg}F0`,
+          borderBottom: `1px solid ${theme.border}`
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <span className="text-lg">💤</span>
-              </div>
-              <span className="text-lg font-light">Somnus</span>
+            {/* Left: Logo & View Toggle */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center gap-2"
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${theme.primary}20` }}
+                >
+                  <HiSparkles size={24} style={{ color: theme.primary }} />
+                </div>
+                <span className="font-bold text-white hidden sm:inline">Alfredo</span>
+              </button>
+
+              {walletAddress && scanComplete && (
+                <div className="flex items-center gap-2 rounded-lg p-1" style={{ backgroundColor: theme.cardBg }}>
+                  <button
+                    onClick={() => setActiveView('dashboard')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeView === 'dashboard' ? 'text-white' : 'text-gray-400'
+                    }`}
+                    style={activeView === 'dashboard' ? { backgroundColor: theme.primary } : {}}
+                  >
+                    <FaChartLine className="inline mr-2" />
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => setActiveView('tasks')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeView === 'tasks' ? 'text-white' : 'text-gray-400'
+                    }`}
+                    style={activeView === 'tasks' ? { backgroundColor: theme.primary } : {}}
+                  >
+                    <FaCoins className="inline mr-2" />
+                    Tasks ({taskStats.completed}/{taskStats.total})
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Wallet */}
-            {!wallet.isConnected ? (
-              <button
-                onClick={wallet.connectWallet}
-                disabled={wallet.isConnecting}
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium text-sm hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {wallet.isConnecting ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <FaWallet />
-                    Connect Wallet
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg">
-                  <FaCoins className="text-yellow-400" />
-                  <span className="text-sm font-mono">{stats.earned}</span>
-                </div>
+            {/* Right: Wallet Info */}
+            <div className="flex items-center gap-3">
+              {wallet.isConnected ? (
+                <>
+                  <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                  >
+                    <FaWallet size={14} style={{ color: theme.primary }} />
+                    <span className="text-sm text-white font-mono">
+                      {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(wallet.address)}
+                      className="ml-2"
+                    >
+                      <FaCopy size={12} style={{ color: theme.textSecondary }} />
+                    </button>
+                  </div>
+                  <button
+                    onClick={wallet.disconnect}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </>
+              ) : (
                 <button
-                  onClick={copyAddress}
-                  className="px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-sm font-mono transition-colors flex items-center gap-2"
+                  onClick={wallet.connectWallet}
+                  disabled={wallet.isConnecting}
+                  className="px-6 py-2 rounded-lg font-semibold text-white flex items-center gap-2 disabled:opacity-50"
+                  style={{ backgroundColor: theme.primary }}
                 >
-                  {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
-                  <FaCopy className="text-xs" />
+                  {wallet.isConnecting ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <FaWallet />
+                      Connect
+                    </>
+                  )}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!wallet.isConnected ? (
-          // Connect Wallet View
-          <motion.div {...fadeIn} className="max-w-2xl mx-auto text-center py-20">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaWallet className="text-4xl text-white/50" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-light mb-4">
-              Connect Your Wallet
-            </h1>
-            <p className="text-gray-400 mb-8">
-              Connect your wallet to start earning SOMNUS tokens and unlock premium features
-            </p>
-            <button
-              onClick={wallet.connectWallet}
-              disabled={wallet.isConnecting}
-              className="px-8 py-3 bg-white text-black rounded-lg font-medium hover:bg-white/90 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
-            >
-              {wallet.isConnecting ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <FaWallet />
-                  Connect MetaMask
-                </>
-              )}
-            </button>
-            {wallet.error && (
-              <p className="text-red-400 text-sm mt-4">{wallet.error}</p>
+        {!walletAddress || !scanComplete ? (
+          // Task Center View (when no wallet scanned)
+          <div className="space-y-8">
+            {/* Task Stats */}
+            {wallet.isConnected && (
+              <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { icon: FaCheckCircle, label: 'Completed', value: `${taskStats.completed}/${taskStats.total}`, color: theme.success },
+                  { icon: FaCoins, label: 'Earned', value: taskStats.earned, suffix: 'AFRD', color: theme.primary },
+                  { icon: FaChartLine, label: 'Progress', value: `${Math.round(taskStats.progress)}%`, color: theme.info },
+                  { icon: FaFire, label: 'Streak', value: getStorage()?.stats?.currentStreak || 0, color: theme.error }
+                ].map((stat, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="rounded-xl p-5 text-center"
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                  >
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3"
+                      style={{ backgroundColor: `${stat.color}20` }}
+                    >
+                      <stat.icon size={24} style={{ color: stat.color }} />
+                    </div>
+                    <p className="text-2xl font-bold text-white mb-1">
+                      {stat.value}
+                      {stat.suffix && <span className="text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
+                    </p>
+                    <p className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
             )}
-          </motion.div>
-        ) : (
-          <>
-            {/* Tabs */}
-            <div className="flex items-center gap-1 mb-8 bg-white/5 border border-white/10 rounded-lg p-1 max-w-md">
-              {[
-                { id: 'tasks', label: 'Tasks', icon: FaTrophy },
-                { id: 'crypto', label: 'Market', icon: FaChartLine },
-                { id: 'news', label: 'News', icon: FaNewspaper }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    activeTab === tab.id
-                      ? 'bg-white text-black'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <tab.icon className="text-sm" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
 
-            {/* Tab Content */}
-            <AnimatePresence mode="wait">
-              {activeTab === 'tasks' && (
-                <motion.div key="tasks" {...fadeIn}>
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                    {[
-                      { label: 'Earned', value: stats.earned, icon: FaCoins, suffix: 'SOMNUS' },
-                      { label: 'Completed', value: stats.completed, icon: FaCheckCircle, suffix: `/ ${stats.total}` },
-                      { label: 'Progress', value: Math.round(stats.progress), icon: FaFire, suffix: '%' },
-                      { label: 'Rank', value: stats.completed >= stats.total ? '🏆' : '⭐', icon: FaTrophy }
-                    ].map((stat, i) => (
+            {/* Tasks List */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-white">Available Tasks</h2>
+              {Object.values(taskDefinitions).map((task, index) => {
+                const isCompleted = tasks[task.id]?.completed;
+                const isProcessing = processingTask === task.id;
+
+                return (
+                  <motion.div
+                    key={task.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`rounded-xl p-6 ${isCompleted ? 'opacity-60' : ''}`}
+                    style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                  >
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
+                          style={{ backgroundColor: `${theme.primary}20` }}
+                        >
+                          <task.icon size={24} style={{ color: theme.primary }} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-white mb-1">{task.title}</h3>
+                          <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="px-2 py-1 rounded"
+                              style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}
+                            >
+                              {task.type}
+                            </span>
+                            <span className="px-2 py-1 rounded"
+                              style={{ backgroundColor: `${theme.info}15`, color: theme.info }}
+                            >
+                              {task.difficulty}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-4">
+                        <div className="text-center sm:text-right">
+                          <p className="text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
+                          <p className="text-xs" style={{ color: theme.textSecondary }}>AFRD</p>
+                        </div>
+
+                        {isCompleted ? (
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                            style={{ backgroundColor: `${theme.success}20`, color: theme.success }}
+                          >
+                            <FaCheckDouble />
+                            Completed
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => completeTask(task.id)}
+                            disabled={isProcessing || !wallet.isConnected}
+                            className="px-6 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
+                            style={{ backgroundColor: theme.primary }}
+                          >
+                            {isProcessing ? <FaSpinner className="animate-spin" /> : 'Complete'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          // Dashboard View (when wallet is scanned)
+          <div>
+            {activeView === 'dashboard' ? (
+              <div>
+                {/* Dashboard content - Portfolio analytics, charts, etc. */}
+                <p className="text-white">Dashboard view for wallet: {walletAddress}</p>
+                {/* Add your existing dashboard UI here */}
+              </div>
+            ) : (
+              // Tasks View within Dashboard
+              <div className="space-y-8">
+                {/* Task Stats */}
+                <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { icon: FaCheckCircle, label: 'Completed', value: `${taskStats.completed}/${taskStats.total}`, color: theme.success },
+                    { icon: FaCoins, label: 'Earned', value: taskStats.earned, suffix: 'AFRD', color: theme.primary },
+                    { icon: FaChartLine, label: 'Progress', value: `${Math.round(taskStats.progress)}%`, color: theme.info },
+                    { icon: FaFire, label: 'Streak', value: getStorage()?.stats?.currentStreak || 0, color: theme.error }
+                  ].map((stat, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="rounded-xl p-5 text-center"
+                      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                    >
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3"
+                        style={{ backgroundColor: `${stat.color}20` }}
+                      >
+                        <stat.icon size={24} style={{ color: stat.color }} />
+                      </div>
+                      <p className="text-2xl font-bold text-white mb-1">
+                        {stat.value}
+                        {stat.suffix && <span className="text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
+                      </p>
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                {/* Tasks List */}
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold text-white">Earn More AFRD</h2>
+                  {Object.values(taskDefinitions).map((task, index) => {
+                    const isCompleted = tasks[task.id]?.completed;
+                    const isProcessing = processingTask === task.id;
+
+                    return (
                       <motion.div
-                        key={stat.label}
+                        key={task.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-white/5 border border-white/10 rounded-lg p-4"
+                        transition={{ delay: index * 0.05 }}
+                        className={`rounded-xl p-6 ${isCompleted ? 'opacity-60' : ''}`}
+                        style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                       >
-                        <div className="flex items-center gap-2 mb-2">
-                          <stat.icon className="text-gray-400" />
-                          <span className="text-xs text-gray-400">{stat.label}</span>
-                        </div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-light text-white">{stat.value}</span>
-                          {stat.suffix && (
-                            <span className="text-xs text-gray-500">{stat.suffix}</span>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Tasks Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.values(taskDefinitions).map((task, i) => {
-                      const isCompleted = tasks[task.id]?.completed;
-                      const isProcessing = processingTask === task.id;
-
-                      return (
-                        <motion.div
-                          key={task.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className={`group relative bg-white/5 border rounded-lg p-6 transition-all ${
-                            isCompleted
-                              ? 'border-green-500/30 bg-green-500/5'
-                              : 'border-white/10 hover:border-white/20 hover:bg-white/10'
-                          }`}
-                        >
-                          {/* Icon */}
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-all ${
-                            isCompleted
-                              ? 'bg-green-500/20'
-                              : 'bg-white/10 group-hover:bg-white/20'
-                          }`}>
-                            {isCompleted ? (
-                              <FaCheckCircle className="text-green-400 text-xl" />
-                            ) : (
-                              <task.icon className="text-white/70 text-xl" />
-                            )}
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                          <div className="flex items-start gap-4 flex-1">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
+                              style={{ backgroundColor: `${theme.primary}20` }}
+                            >
+                              <task.icon size={24} style={{ color: theme.primary }} />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-white mb-1">{task.title}</h3>
+                              <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
+                            </div>
                           </div>
 
-                          {/* Content */}
-                          <h3 className="text-white font-medium mb-1">{task.title}</h3>
-                          <p className="text-gray-400 text-sm mb-4">{task.description}</p>
-
-                          {/* Reward */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1 text-yellow-400">
-                              <FaCoins className="text-sm" />
-                              <span className="text-sm font-medium">+{task.reward}</span>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
+                              <p className="text-xs" style={{ color: theme.textSecondary }}>AFRD</p>
                             </div>
 
-                            <button
-                              onClick={() => completeTask(task.id)}
-                              disabled={isCompleted || isProcessing}
-                              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                isCompleted
-                                  ? 'bg-green-500/20 text-green-400 cursor-default'
-                                  : isProcessing
-                                  ? 'bg-white/10 text-white cursor-wait'
-                                  : 'bg-white text-black hover:bg-white/90'
-                              }`}
-                            >
-                              {isProcessing ? (
-                                <FaSpinner className="animate-spin" />
-                              ) : isCompleted ? (
-                                'Completed'
-                              ) : (
-                                'Start'
-                              )}
-                            </button>
+                            {isCompleted ? (
+                              <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                                style={{ backgroundColor: `${theme.success}20`, color: theme.success }}
+                              >
+                                <FaCheckDouble />
+                                Done
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => completeTask(task.id)}
+                                disabled={isProcessing}
+                                className="px-6 py-3 rounded-lg font-semibold text-white disabled:opacity-50"
+                                style={{ backgroundColor: theme.primary }}
+                              >
+                                {isProcessing ? <FaSpinner className="animate-spin" /> : 'Earn'}
+                              </button>
+                            )}
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-
-                  {/* All Completed */}
-                  {stats.completed >= stats.total && (
-                    <motion.div
-                      {...fadeIn}
-                      className="mt-8 bg-green-500/10 border border-green-500/30 rounded-lg p-8 text-center"
-                    >
-                      <FaTrophy className="text-5xl text-yellow-400 mx-auto mb-4" />
-                      <h3 className="text-2xl font-light text-white mb-2">
-                        All Tasks Completed!
-                      </h3>
-                      <p className="text-gray-400">
-                        You've earned {stats.earned} SOMNUS tokens
-                      </p>
-                    </motion.div>
-                  )}
-                </motion.div>
-              )}
-
-              {activeTab === 'crypto' && (
-                <motion.div key="crypto" {...fadeIn}>
-                  <CryptoRecommendations />
-                </motion.div>
-              )}
-
-              {activeTab === 'news' && (
-                <motion.div key="news" {...fadeIn}>
-                  <NewsTerminal />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
+        <div className="text-center">
+          <HiSparkles size={48} style={{ color: theme.primary }} className="animate-spin mx-auto mb-4" />
+          <p className="text-white">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AlfredoDashboard />
+    </Suspense>
   );
 }
