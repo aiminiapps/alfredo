@@ -18,6 +18,7 @@ import {
   PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts';
+import AlfredoTaskCenter from '@/components/Tasks';
 
 function AIDashboard() {
   const searchParams = useSearchParams();
@@ -663,7 +664,8 @@ function AIDashboard() {
               { id: 'holdings', icon: FaCoins, label: 'Holdings' },
               { id: 'chains', icon: FaLayerGroup, label: 'Chains' },
               { id: 'pnl', icon: FaTrophy, label: 'P&L' },
-              { id: 'insights', icon: FaBrain, label: 'AI Insights', badge: 'New' }
+              { id: 'insights', icon: FaBrain, label: 'AI Insights', badge: 'New' },
+              { id: 'tasks', icon: FaBrain, label: 'Tasks', badge: 'New' }
             ].map((tab) => (
               <motion.button
                 key={tab.id}
@@ -1844,6 +1846,11 @@ function AIDashboard() {
                     </div>
                   </motion.div>
                 )}
+              </div>
+            )}
+            {activeTab === 'tasks' && aiInsights && (
+              <div>
+                <AlfredoTaskCenter/>
               </div>
             )}
           </motion.div>
