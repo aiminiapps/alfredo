@@ -5,8 +5,7 @@ import {
   FaTwitter, FaWallet, FaSpinner, FaCheckCircle, FaTelegram, 
   FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp, FaCopy, 
   FaInfoCircle, FaGift, FaCoins, FaChartLine, 
-  FaTrophy, FaFire, FaShare, FaUsers, 
-  FaMobileAlt, FaCheckDouble, FaEye
+  FaTrophy, FaFire, FaShare, FaCheckDouble, FaEye
 } from 'react-icons/fa';
 import { TbTarget } from 'react-icons/tb';
 import { BiCoin, BiData, BiShield } from 'react-icons/bi';
@@ -16,7 +15,7 @@ import { HiSparkles } from 'react-icons/hi';
 const STORAGE_KEY = 'alfredo-task-center';
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT_ADDRESS || '0x...';
 
-// Clean Theme
+// Theme
 const theme = {
   primary: '#FF8C00',
   secondary: '#FFB347',
@@ -24,14 +23,13 @@ const theme = {
   error: '#FF453A',
   warning: '#FFCC00',
   info: '#5E5CE6',
-  background: '#0D0A07',
   cardBg: '#1A120C',
   border: '#2A1E14',
   text: '#F5F5F5',
   textSecondary: '#A9A9B1'
 };
 
-// Smooth animations without bounce
+// Animations
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -70,9 +68,7 @@ const initStorage = () => {
       tasksCompleted: 0,
       currentStreak: 0,
       lastCompletedDate: null
-    },
-    achievements: [],
-    notifications: []
+    }
   };
 
   const existing = getStorage();
@@ -90,7 +86,7 @@ const updateStorage = (updates) => {
   return newData;
 };
 
-// Wallet Hook (same logic as before)
+// Wallet Hook
 const useWallet = () => {
   const [wallet, setWallet] = useState({
     address: null,
@@ -178,8 +174,6 @@ const useWallet = () => {
         } catch (err) {
           console.warn('Balance fetch failed:', err);
         }
-      } else {
-        throw new Error('Ethers library not properly loaded');
       }
 
       setWallet({
@@ -376,8 +370,8 @@ const useWallet = () => {
   return { ...wallet, connectWallet, disconnect, welcomeBonusStatus };
 };
 
-// Main Component
-export default function AlfredoTaskCenter() {
+// Main Component (Full Width, No Background)
+export default function TaskCenterComponent() {
   const wallet = useWallet();
   const [tasks, setTasks] = useState({});
   const [processingTask, setProcessingTask] = useState(null);
@@ -603,7 +597,7 @@ export default function AlfredoTaskCenter() {
 
   if (!wallet.isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
+      <div className="w-full flex items-center justify-center py-12">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -619,8 +613,8 @@ export default function AlfredoTaskCenter() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background, color: theme.text }}>
-      {/* Clean Notification */}
+    <div className="w-full" style={{ color: theme.text }}>
+      {/* Notification */}
       <AnimatePresence>
         {notification && (
           <motion.div
@@ -737,12 +731,12 @@ export default function AlfredoTaskCenter() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Clean Header */}
-        <motion.div {...fadeIn} className="text-center mb-12">
-          <h1 className="text-3xl heading sm:text-5xl font-bold text-white mb-3">Task Center</h1>
-          <p style={{ color: theme.textSecondary }} className="text-lg text-balance">
-            Complete tasks and earn AFRD tokens on BSC
+      <div className="w-full py-8 sm:py-12">
+        {/* Header */}
+        <motion.div {...fadeIn} className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3">Earn AFRD Tokens</h1>
+          <p style={{ color: theme.textSecondary }} className="text-lg">
+            Complete tasks and earn rewards on BSC
           </p>
         </motion.div>
 
@@ -750,25 +744,25 @@ export default function AlfredoTaskCenter() {
         {!wallet.isConnected ? (
           <motion.div 
             {...fadeIn}
-            className="rounded-2xl p-8 text-center mb-12"
+            className="rounded-2xl p-6 sm:p-8 text-center mb-8 sm:mb-12"
             style={{ 
               backgroundColor: theme.cardBg,
               border: `1px solid ${theme.border}`
             }}
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6"
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mb-4 sm:mb-6"
               style={{ backgroundColor: `${theme.primary}20` }}
             >
               <FaWallet size={40} style={{ color: theme.primary }} />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 heading">Connect Your Wallet</h2>
-            <p style={{ color: theme.textSecondary }} className="mb-6 text-balance max-w-md mx-auto">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">Connect Your Wallet</h2>
+            <p style={{ color: theme.textSecondary }} className="mb-6 max-w-md mx-auto">
               Connect MetaMask to start earning. New users receive 10 tokens instantly!
             </p>
             <button
               onClick={wallet.connectWallet}
               disabled={wallet.isConnecting}
-              className="px-8 py-4 rounded-xl font-semibold text-white inline-flex items-center gap-3 disabled:opacity-50 transition-opacity"
+              className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-white inline-flex items-center gap-3 disabled:opacity-50 transition-opacity"
               style={{ backgroundColor: theme.primary }}
             >
               {wallet.isConnecting ? (
@@ -792,7 +786,7 @@ export default function AlfredoTaskCenter() {
         ) : (
           <>
             {/* Wallet Info Grid */}
-            <motion.div {...slideIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <motion.div {...slideIn} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {[
                 { icon: FaWallet, label: 'Address', value: `${wallet.address?.slice(0, 6)}...${wallet.address?.slice(-4)}`, action: () => copyToClipboard(wallet.address) },
                 { icon: BiCoin, label: 'BNB', value: parseFloat(wallet.balance).toFixed(4) },
@@ -804,7 +798,7 @@ export default function AlfredoTaskCenter() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05, duration: 0.4 }}
-                  className="rounded-xl p-4"
+                  className="rounded-xl p-3 sm:p-4"
                   style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -826,7 +820,7 @@ export default function AlfredoTaskCenter() {
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12">
               {[
                 { icon: FaCheckCircle, label: 'Completed', value: `${stats.completed}/${stats.total}`, color: theme.success },
                 { icon: FaCoins, label: 'Earned', value: stats.earned, suffix: 'AFRD', color: theme.primary },
@@ -838,17 +832,17 @@ export default function AlfredoTaskCenter() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05, duration: 0.4 }}
-                  className="rounded-xl p-5 text-center"
+                  className="rounded-xl p-4 sm:p-5 text-center"
                   style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                 >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3"
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl mb-3"
                     style={{ backgroundColor: `${stat.color}20` }}
                   >
-                    <stat.icon size={24} style={{ color: stat.color }} />
+                    <stat.icon size={20} style={{ color: stat.color }} />
                   </div>
-                  <p className="text-2xl font-bold text-white mb-1">
+                  <p className="text-xl sm:text-2xl font-bold text-white mb-1">
                     {stat.value}
-                    {stat.suffix && <span className="text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
+                    {stat.suffix && <span className="text-xs sm:text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
                   </p>
                   <p className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</p>
                 </motion.div>
@@ -856,8 +850,8 @@ export default function AlfredoTaskCenter() {
             </motion.div>
 
             {/* Tasks List */}
-            <div className="space-y-4 mb-12">
-              <h2 className="text-2xl font-bold text-white heading mb-6">Available Tasks</h2>
+            <div className="space-y-4 mb-8 sm:mb-12">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Available Tasks</h2>
               {Object.values(taskDefinitions).map((task, index) => {
                 const isCompleted = tasks[task.id]?.completed;
                 const isProcessing = processingTask === task.id;
@@ -868,20 +862,20 @@ export default function AlfredoTaskCenter() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.4 }}
-                    className={`rounded-xl p-6 ${isCompleted ? 'opacity-60' : ''}`}
+                    className={`rounded-xl p-4 sm:p-6 ${isCompleted ? 'opacity-60' : ''}`}
                     style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                   >
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
+                      <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                        <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex-shrink-0"
                           style={{ backgroundColor: `${theme.primary}20` }}
                         >
-                          <task.icon size={24} style={{ color: theme.primary }} />
+                          <task.icon size={20} style={{ color: theme.primary }} />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-white mb-1">{task.title}</h3>
+                          <h3 className="text-base sm:text-lg font-bold text-white mb-1">{task.title}</h3>
                           <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
-                          <div className="flex items-center gap-3 text-xs">
+                          <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap">
                             <span className="px-2 py-1 rounded"
                               style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}
                             >
@@ -896,14 +890,14 @@ export default function AlfredoTaskCenter() {
                         </div>
                       </div>
 
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-4">
-                        <div className="text-center sm:text-right">
-                          <p className="text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 sm:gap-2">
+                        <div className="text-left sm:text-right">
+                          <p className="text-xl sm:text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
                           <p className="text-xs" style={{ color: theme.textSecondary }}>AFRD</p>
                         </div>
 
                         {isCompleted ? (
-                          <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap"
                             style={{ backgroundColor: `${theme.success}20`, color: theme.success }}
                           >
                             <FaCheckDouble />
@@ -913,7 +907,7 @@ export default function AlfredoTaskCenter() {
                           <button
                             onClick={() => completeTask(task.id)}
                             disabled={isProcessing}
-                            className="px-6 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
+                            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-white text-sm disabled:opacity-50 transition-opacity whitespace-nowrap"
                             style={{ backgroundColor: theme.primary }}
                           >
                             {isProcessing ? <FaSpinner className="animate-spin" /> : 'Complete'}
@@ -942,47 +936,47 @@ export default function AlfredoTaskCenter() {
               })}
             </div>
 
-            {/* Completion */}
+            {/* Completion Message */}
             {stats.completed === stats.total && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl p-8 text-center mb-12"
+                className="rounded-xl p-6 sm:p-8 text-center mb-8 sm:mb-12"
                 style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
               >
-                <FaTrophy size={64} style={{ color: theme.primary }} className="mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">All Tasks Completed!</h2>
+                <FaTrophy size={56} style={{ color: theme.primary }} className="mx-auto mb-4" />
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">All Tasks Completed!</h2>
                 <p style={{ color: theme.textSecondary }} className="mb-6">You've completed all available tasks!</p>
-                <div className="inline-block rounded-xl p-6"
+                <div className="inline-block rounded-xl p-4 sm:p-6"
                   style={{ backgroundColor: `${theme.primary}20` }}
                 >
                   <p className="text-sm" style={{ color: theme.textSecondary }}>Total Earned</p>
-                  <p className="text-4xl font-bold" style={{ color: theme.primary }}>{stats.earned} AFRD</p>
+                  <p className="text-3xl sm:text-4xl font-bold" style={{ color: theme.primary }}>{stats.earned} AFRD</p>
                 </div>
               </motion.div>
             )}
 
-            {/* Add Token */}
+            {/* Add Token Section */}
             <motion.div
               {...fadeIn}
               transition={{ delay: 0.3 }}
-              className="rounded-xl p-6"
+              className="rounded-xl p-4 sm:p-6"
               style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
             >
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
+                <div className="flex-1 w-full">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center"
                       style={{ backgroundColor: `${theme.primary}20` }}
                     >
                       <BiCoin size={24} style={{ color: theme.primary }} />
                     </div>
-                    <h3 className="text-xl font-bold text-white">Add AFRD to MetaMask</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-white">Add AFRD to MetaMask</h3>
                   </div>
-                  <p style={{ color: theme.textSecondary }} className="mb-4">
+                  <p style={{ color: theme.textSecondary }} className="mb-4 text-sm sm:text-base">
                     Import the AFRD token to track your balance
                   </p>
-                  <div className="rounded-lg p-4 mb-4"
+                  <div className="rounded-lg p-3 sm:p-4 mb-4"
                     style={{ backgroundColor: `${theme.primary}10`, border: `1px solid ${theme.primary}30` }}
                   >
                     <p className="text-xs mb-1" style={{ color: theme.textSecondary }}>Contract</p>
@@ -1000,7 +994,7 @@ export default function AlfredoTaskCenter() {
                   </div>
                   <button
                     onClick={addTokenToMetaMask}
-                    className="px-6 py-3 rounded-lg font-semibold text-white flex items-center gap-2"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2"
                     style={{ backgroundColor: theme.primary }}
                   >
                     <FaWallet />
@@ -1010,7 +1004,7 @@ export default function AlfredoTaskCenter() {
 
                 <button
                   onClick={() => setShowTokenInfo(!showTokenInfo)}
-                  className="p-3 rounded-lg"
+                  className="self-start sm:self-auto p-3 rounded-lg"
                   style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
                 >
                   <FaInfoCircle size={20} />
@@ -1026,7 +1020,7 @@ export default function AlfredoTaskCenter() {
                     className="mt-6 pt-6"
                     style={{ borderTop: `1px solid ${theme.border}` }}
                   >
-                    <h4 className="font-semibold text-white mb-4">How to import:</h4>
+                    <h4 className="font-semibold text-white mb-4 text-sm sm:text-base">How to import:</h4>
                     <div className="space-y-3">
                       {[
                         { step: 1, title: 'Open MetaMask', desc: "Ensure you're on BNB Smart Chain" },
@@ -1041,7 +1035,7 @@ export default function AlfredoTaskCenter() {
                           >
                             {item.step}
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <h5 className="font-medium text-white text-sm">{item.title}</h5>
                             <p className="text-xs" style={{ color: theme.textSecondary }}>{item.desc}</p>
                           </div>
