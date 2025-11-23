@@ -24,7 +24,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 
-// Theme
+// Theme Configuration
 const theme = {
   primary: '#FF8C00',
   secondary: '#FFB347',
@@ -48,6 +48,22 @@ const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.4, ease: "easeOut" }
+};
+
+const slideIn = {
+  initial: { opacity: 0, x: -20 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.4, ease: "easeOut" }
+};
+
+// Chart Colors
+const CHART_COLORS = {
+  primary: [theme.primary, theme.secondary, '#FFAA4D', '#FFC080', '#FF9933', '#FFD4A6'],
+  performance: {
+    positive: theme.success,
+    negative: theme.error,
+    neutral: '#A9A9B1'
+  }
 };
 
 // Storage Utilities
@@ -121,7 +137,7 @@ const useWallet = () => {
         window.location.href = `https://metamask.app.link/dapp/${window.location.host}`;
         return;
       }
-      alert('🔥 Please install MetaMask extension!');
+      toast.error('Please install MetaMask!');
       return;
     }
 
@@ -221,6 +237,7 @@ const useWallet = () => {
         error: error.message,
         isInitialized: true
       }));
+      toast.error(error.message);
     }
   }, []);
 
@@ -378,13 +395,42 @@ const useWallet = () => {
   return { ...wallet, connectWallet, disconnect, welcomeBonusStatus };
 };
 
+// Custom Tooltip for Charts
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      style={{
+        backgroundColor: theme.cardBg,
+        border: `2px solid ${theme.primary}`,
+        borderRadius: '12px',
+        padding: '12px',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
+      }}
+    >
+      <p style={{ color: theme.text, fontWeight: 'bold', marginBottom: '8px' }}>{label}</p>
+      {payload.map((entry, index) => (
+        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '4px' }}>
+          <span style={{ color: theme.textSecondary, fontSize: '12px' }}>{entry.name}</span>
+          <span style={{ fontWeight: 'bold', color: entry.color, fontSize: '12px' }}>
+            {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
+          </span>
+        </div>
+      ))}
+    </motion.div>
+  );
+};
+
 // Main Dashboard Component
 function AlfredoDashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const wallet = useWallet();
   
-  const walletAddress = searchParams.get('wallet');
+  const walletParam = searchParams.get('wallet');
   const network = searchParams.get('network') || 'ethereum';
 
   // AI Dashboard State
@@ -397,12 +443,15 @@ function AlfredoDashboard() {
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState(null);
 
   // Task Center State
   const [tasks, setTasks] = useState({});
   const [processingTask, setProcessingTask] = useState(null);
   const [showTokenInfo, setShowTokenInfo] = useState(false);
-  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' or 'tasks'
+
+  // View State - 'tasks', 'dashboard', or 'both'
+  const [activeView, setActiveView] = useState(walletParam ? 'dashboard' : 'tasks');
 
   const chatEndRef = useRef(null);
 
@@ -410,11 +459,20 @@ function AlfredoDashboard() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
+  // Load tasks from storage
   useEffect(() => {
-    if (walletAddress && !isScanning && !scanComplete) {
+    const saved = getStorage();
+    if (saved?.tasks) {
+      setTasks(saved.tasks);
+    }
+  }, []);
+
+  // Scan wallet when wallet parameter is present
+  useEffect(() => {
+    if (walletParam && !isScanning && !scanComplete) {
       scanWallet();
     }
-  }, [walletAddress]);
+  }, [walletParam]);
 
   // Task Definitions
   const taskDefinitions = useMemo(() => ({
@@ -480,13 +538,7 @@ function AlfredoDashboard() {
     }
   }), []);
 
-  useEffect(() => {
-    const saved = getStorage();
-    if (saved?.tasks) {
-      setTasks(saved.tasks);
-    }
-  }, []);
-
+  // Task Stats
   const taskStats = useMemo(() => {
     const saved = getStorage();
     const completed = Object.values(tasks).filter(t => t.completed).length;
@@ -508,7 +560,7 @@ function AlfredoDashboard() {
       const scanResponse = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: walletAddress, chains: [network] })
+        body: JSON.stringify({ wallet: walletParam, chains: [network] })
       });
 
       if (!scanResponse.ok) throw new Error('Scan failed');
@@ -526,7 +578,7 @@ function AlfredoDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           analytics: scanData.analytics, 
-          wallet: walletAddress 
+          wallet: walletParam 
         })
       });
 
@@ -534,12 +586,15 @@ function AlfredoDashboard() {
         const insightsData = await insightsResponse.json();
         setAiInsights(insightsData);
         toast.success('AI analysis complete!', { id: 'ai' });
+      } else {
+        toast.error('AI insights unavailable', { id: 'ai' });
       }
 
       setScanComplete(true);
+      setActiveView('dashboard');
     } catch (error) {
       console.error('Scan error:', error);
-      toast.error(error.message || 'Failed to scan wallet', { id: 'scan' });
+      toast.error(error.message || 'Failed to scan wallet');
       setTimeout(() => router.push('/'), 2000);
     } finally {
       setIsScanning(false);
@@ -620,13 +675,81 @@ function AlfredoDashboard() {
     }
   }, [wallet, tasks, taskDefinitions]);
 
+  // AI Chat Functions
+  const sendChatMessage = async () => {
+    if (!userInput.trim() || isTyping) return;
+
+    const userMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: userInput,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    const currentInput = userInput;
+    setUserInput('');
+    setIsTyping(true);
+
+    try {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            ...chatMessages.slice(-6).map(msg => ({ role: msg.role, content: msg.content })),
+            { role: 'user', content: currentInput }
+          ],
+          walletData: walletData
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const responseContent = data.reply || 'Error processing request.';
+        
+        const assistantMessage = {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: responseContent,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setChatMessages(prev => [...prev, assistantMessage]);
+      } else {
+        throw new Error('Chat failed');
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setChatMessages(prev => [...prev, fallbackMessage]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
   };
 
+  const sharePortfolio = () => {
+    const shareUrl = window.location.href;
+    copyToClipboard(shareUrl);
+    toast.success('Share link copied!');
+  };
+
+  const exportPortfolio = () => {
+    toast.success('Exporting portfolio report...');
+  };
+
   // Loading State
-  if (!wallet.isInitialized || (walletAddress && isScanning)) {
+  if (!wallet.isInitialized || (walletParam && isScanning)) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
         <div className="text-center">
@@ -638,12 +761,54 @@ function AlfredoDashboard() {
             <HiSparkles size={48} style={{ color: theme.primary }} />
           </motion.div>
           <p className="text-white text-lg font-medium">
-            {walletAddress ? 'Analyzing Portfolio...' : 'Loading...'}
+            {walletParam ? 'Analyzing Portfolio...' : 'Loading...'}
           </p>
+          {walletParam && (
+            <p className="text-gray-400 text-sm mt-2">
+              Scanning {network} blockchain...
+            </p>
+          )}
         </div>
       </div>
     );
   }
+
+  // Prepare Chart Data (if wallet data exists)
+  const chartData = useMemo(() => {
+    if (!walletData || !scanComplete) return null;
+
+    const analytics = walletData.analytics;
+
+    return {
+      chainDistribution: analytics.chainDistribution.map((chain, idx) => ({
+        name: chain.chain,
+        value: chain.value,
+        percentage: parseFloat(chain.percentage),
+        color: CHART_COLORS.primary[idx % CHART_COLORS.primary.length]
+      })),
+      topHoldings: analytics.topHoldings.slice(0, 10).map((token, idx) => ({
+        name: token.symbol,
+        value: token.valueUSD,
+        change: token.percentChange24h,
+        color: token.percentChange24h > 0 ? CHART_COLORS.performance.positive : CHART_COLORS.performance.negative
+      })),
+      pnlData: Object.values(analytics.pnlData).slice(0, 12).map(token => ({
+        name: token.symbol,
+        totalPnL: token.totalPnL,
+        realized: token.realizedPnL,
+        unrealized: token.unrealizedPnL,
+        profit: token.totalPnL > 0 ? token.totalPnL : 0,
+        loss: token.totalPnL < 0 ? Math.abs(token.totalPnL) : 0
+      })),
+      radarData: aiInsights ? [
+        { metric: 'Portfolio', value: aiInsights.scores?.portfolio || 0, fullMark: 100 },
+        { metric: 'Risk', value: aiInsights.scores?.risk || 0, fullMark: 100 },
+        { metric: 'Performance', value: aiInsights.scores?.performance || 0, fullMark: 100 },
+        { metric: 'Diversification', value: aiInsights.scores?.diversification || 0, fullMark: 100 },
+        { metric: 'Activity', value: aiInsights.scores?.activity || 0, fullMark: 100 }
+      ] : []
+    };
+  }, [walletData, aiInsights, scanComplete]);
 
   // Main Render
   return (
@@ -694,6 +859,17 @@ function AlfredoDashboard() {
               <FaGift size={56} style={{ color: theme.success }} className="mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-white mb-2">Welcome!</h3>
               <p className="text-xl font-bold mb-4" style={{ color: theme.success }}>+10 AFRD received!</p>
+              {wallet.welcomeBonusStatus.txHash && (
+                <a
+                  href={`https://bscscan.com/tx/${wallet.welcomeBonusStatus.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm flex items-center justify-center gap-2 mb-4 hover:underline"
+                  style={{ color: theme.primary }}
+                >
+                  <FaEye /> View Transaction <FaExternalLinkAlt size={12} />
+                </a>
+              )}
               <button
                 onClick={() => window.location.reload()}
                 className="w-full px-6 py-3 rounded-xl font-semibold text-white"
@@ -717,8 +893,8 @@ function AlfredoDashboard() {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left: Logo & View Toggle */}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            {/* Left: Logo & Navigation */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/')}
@@ -729,56 +905,85 @@ function AlfredoDashboard() {
                 >
                   <HiSparkles size={24} style={{ color: theme.primary }} />
                 </div>
-                <span className="font-bold text-white hidden sm:inline">Alfredo</span>
+                <span className="font-bold text-white hidden sm:inline">Alfredo AI</span>
               </button>
 
-              {walletAddress && scanComplete && (
+              {/* View Toggle */}
+              {(walletParam && scanComplete) && (
                 <div className="flex items-center gap-2 rounded-lg p-1" style={{ backgroundColor: theme.cardBg }}>
                   <button
                     onClick={() => setActiveView('dashboard')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                       activeView === 'dashboard' ? 'text-white' : 'text-gray-400'
                     }`}
                     style={activeView === 'dashboard' ? { backgroundColor: theme.primary } : {}}
                   >
-                    <FaChartLine className="inline mr-2" />
+                    <FaChartLine className="inline mr-1" />
                     Dashboard
                   </button>
                   <button
                     onClick={() => setActiveView('tasks')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                       activeView === 'tasks' ? 'text-white' : 'text-gray-400'
                     }`}
                     style={activeView === 'tasks' ? { backgroundColor: theme.primary } : {}}
                   >
-                    <FaCoins className="inline mr-2" />
-                    Tasks ({taskStats.completed}/{taskStats.total})
+                    <FaCoins className="inline mr-1" />
+                    Tasks
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Right: Wallet Info */}
-            <div className="flex items-center gap-3">
+            {/* Right: Wallet & Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {wallet.isConnected ? (
                 <>
-                  <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg"
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
                     style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                   >
                     <FaWallet size={14} style={{ color: theme.primary }} />
-                    <span className="text-sm text-white font-mono">
+                    <span className="text-white font-mono text-xs">
                       {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
                     </span>
                     <button
                       onClick={() => copyToClipboard(wallet.address)}
-                      className="ml-2"
+                      className="ml-1"
                     >
-                      <FaCopy size={12} style={{ color: theme.textSecondary }} />
+                      <FaCopy size={10} style={{ color: theme.textSecondary }} />
                     </button>
                   </div>
+
+                  {walletParam && scanComplete && (
+                    <>
+                      <button
+                        onClick={sharePortfolio}
+                        className="p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+                        title="Share"
+                      >
+                        <FaShare size={16} style={{ color: theme.textSecondary }} />
+                      </button>
+                      <button
+                        onClick={exportPortfolio}
+                        className="p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+                        title="Export"
+                      >
+                        <FaDownload size={16} style={{ color: theme.textSecondary }} />
+                      </button>
+                      <button
+                        onClick={() => setShowChat(!showChat)}
+                        className="px-3 py-2 rounded-lg font-semibold text-white text-sm flex items-center gap-2"
+                        style={{ backgroundColor: theme.primary }}
+                      >
+                        <FaRobot size={16} />
+                        <span className="hidden sm:inline">AI Chat</span>
+                      </button>
+                    </>
+                  )}
+
                   <button
                     onClick={wallet.disconnect}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
                   >
                     Disconnect
                   </button>
@@ -787,18 +992,18 @@ function AlfredoDashboard() {
                 <button
                   onClick={wallet.connectWallet}
                   disabled={wallet.isConnecting}
-                  className="px-6 py-2 rounded-lg font-semibold text-white flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-white text-sm flex items-center gap-2 disabled:opacity-50"
                   style={{ backgroundColor: theme.primary }}
                 >
                   {wallet.isConnecting ? (
                     <>
-                      <FaSpinner className="animate-spin" />
-                      Connecting...
+                      <FaSpinner className="animate-spin" size={14} />
+                      <span className="hidden sm:inline">Connecting...</span>
                     </>
                   ) : (
                     <>
-                      <FaWallet />
-                      Connect
+                      <FaWallet size={14} />
+                      <span>Connect</span>
                     </>
                   )}
                 </button>
@@ -810,12 +1015,24 @@ function AlfredoDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!walletAddress || !scanComplete ? (
-          // Task Center View (when no wallet scanned)
+        {activeView === 'tasks' || (!walletParam && !scanComplete) ? (
+          // TASK CENTER VIEW
           <div className="space-y-8">
+            <motion.div {...fadeIn} className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+                style={{ backgroundColor: `${theme.primary}20` }}
+              >
+                <FaCoins size={32} style={{ color: theme.primary }} />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Earn AFRD Tokens</h1>
+              <p style={{ color: theme.textSecondary }} className="text-base sm:text-lg">
+                Complete simple tasks and earn rewards on BSC
+              </p>
+            </motion.div>
+
             {/* Task Stats */}
             {wallet.isConnected && (
-              <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {[
                   { icon: FaCheckCircle, label: 'Completed', value: `${taskStats.completed}/${taskStats.total}`, color: theme.success },
                   { icon: FaCoins, label: 'Earned', value: taskStats.earned, suffix: 'AFRD', color: theme.primary },
@@ -827,17 +1044,17 @@ function AlfredoDashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="rounded-xl p-5 text-center"
+                    className="rounded-xl p-4 sm:p-5 text-center"
                     style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                   >
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3"
+                    <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl mb-3"
                       style={{ backgroundColor: `${stat.color}20` }}
                     >
-                      <stat.icon size={24} style={{ color: stat.color }} />
+                      <stat.icon size={20} style={{ color: stat.color }} />
                     </div>
-                    <p className="text-2xl font-bold text-white mb-1">
+                    <p className="text-xl sm:text-2xl font-bold text-white mb-1">
                       {stat.value}
-                      {stat.suffix && <span className="text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
+                      {stat.suffix && <span className="text-xs sm:text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
                     </p>
                     <p className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</p>
                   </motion.div>
@@ -847,7 +1064,7 @@ function AlfredoDashboard() {
 
             {/* Tasks List */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">Available Tasks</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">Available Tasks</h2>
               {Object.values(taskDefinitions).map((task, index) => {
                 const isCompleted = tasks[task.id]?.completed;
                 const isProcessing = processingTask === task.id;
@@ -858,20 +1075,20 @@ function AlfredoDashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`rounded-xl p-6 ${isCompleted ? 'opacity-60' : ''}`}
+                    className={`rounded-xl p-4 sm:p-6 ${isCompleted ? 'opacity-60' : ''}`}
                     style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
                   >
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
+                      <div className="flex items-start gap-3 sm:gap-4 flex-1 w-full sm:w-auto">
+                        <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex-shrink-0"
                           style={{ backgroundColor: `${theme.primary}20` }}
                         >
-                          <task.icon size={24} style={{ color: theme.primary }} />
+                          <task.icon size={20} style={{ color: theme.primary }} />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-white mb-1">{task.title}</h3>
-                          <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
-                          <div className="flex items-center gap-3 text-xs">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base sm:text-lg font-bold text-white mb-1">{task.title}</h3>
+                          <p className="text-xs sm:text-sm mb-2 sm:mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
+                          <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap">
                             <span className="px-2 py-1 rounded"
                               style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}
                             >
@@ -886,141 +1103,564 @@ function AlfredoDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-4">
-                        <div className="text-center sm:text-right">
-                          <p className="text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 sm:gap-2">
+                        <div className="text-left sm:text-right">
+                          <p className="text-xl sm:text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
                           <p className="text-xs" style={{ color: theme.textSecondary }}>AFRD</p>
                         </div>
 
                         {isCompleted ? (
-                          <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap"
                             style={{ backgroundColor: `${theme.success}20`, color: theme.success }}
                           >
-                            <FaCheckDouble />
+                            <FaCheckDouble size={14} />
                             Completed
                           </div>
                         ) : (
                           <button
                             onClick={() => completeTask(task.id)}
                             disabled={isProcessing || !wallet.isConnected}
-                            className="px-6 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
+                            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-white text-xs sm:text-sm disabled:opacity-50 transition-opacity whitespace-nowrap"
                             style={{ backgroundColor: theme.primary }}
                           >
-                            {isProcessing ? <FaSpinner className="animate-spin" /> : 'Complete'}
+                            {isProcessing ? <FaSpinner className="animate-spin" size={14} /> : 'Complete'}
                           </button>
                         )}
                       </div>
                     </div>
+
+                    {tasks[task.id]?.txHash && (
+                      <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+                        <a
+                          href={`https://bscscan.com/tx/${tasks[task.id].txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs flex items-center gap-2 hover:underline"
+                          style={{ color: theme.primary }}
+                        >
+                          <FaEye size={12} />
+                          View Transaction
+                          <FaExternalLinkAlt size={10} />
+                        </a>
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
             </div>
+
+            {/* Completion Message */}
+            {taskStats.completed === taskStats.total && wallet.isConnected && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl p-8 text-center"
+                style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+              >
+                <FaTrophy size={56} style={{ color: theme.primary }} className="mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">All Tasks Completed!</h2>
+                <p style={{ color: theme.textSecondary }} className="mb-6">
+                  Congratulations! You've completed all available tasks!
+                </p>
+                <div className="inline-block rounded-xl p-6"
+                  style={{ backgroundColor: `${theme.primary}20` }}
+                >
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>Total Earned</p>
+                  <p className="text-4xl font-bold" style={{ color: theme.primary }}>{taskStats.earned} AFRD</p>
+                </div>
+              </motion.div>
+            )}
           </div>
         ) : (
-          // Dashboard View (when wallet is scanned)
-          <div>
-            {activeView === 'dashboard' ? (
-              <div>
-                {/* Dashboard content - Portfolio analytics, charts, etc. */}
-                <p className="text-white">Dashboard view for wallet: {walletAddress}</p>
-                {/* Add your existing dashboard UI here */}
-              </div>
-            ) : (
-              // Tasks View within Dashboard
-              <div className="space-y-8">
-                {/* Task Stats */}
-                <motion.div {...fadeIn} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          // AI DASHBOARD VIEW
+          <div className="space-y-6">
+            {walletData && chartData && (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { icon: FaCheckCircle, label: 'Completed', value: `${taskStats.completed}/${taskStats.total}`, color: theme.success },
-                    { icon: FaCoins, label: 'Earned', value: taskStats.earned, suffix: 'AFRD', color: theme.primary },
-                    { icon: FaChartLine, label: 'Progress', value: `${Math.round(taskStats.progress)}%`, color: theme.info },
-                    { icon: FaFire, label: 'Streak', value: getStorage()?.stats?.currentStreak || 0, color: theme.error }
+                    {
+                      icon: FaWallet,
+                      label: 'Total Value',
+                      value: '$' + walletData.analytics.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                      change: walletData.analytics.totalPnL,
+                      changePercent: walletData.analytics.totalValue > 0 ? (walletData.analytics.totalPnL / walletData.analytics.totalValue * 100).toFixed(2) : 0,
+                      isPrimary: true
+                    },
+                    {
+                      icon: FaGlobe,
+                      label: 'Active Chains',
+                      value: walletData.analytics.activeChains,
+                      subtext: `${walletData.analytics.totalTokens} tokens`
+                    },
+                    {
+                      icon: FaChartPie,
+                      label: 'Diversification',
+                      value: (walletData.analytics.diversificationScore * 100).toFixed(0),
+                      progress: walletData.analytics.diversificationScore * 100
+                    },
+                    {
+                      icon: FaShieldAlt,
+                      label: 'Risk Score',
+                      value: (walletData.analytics.riskScore * 100).toFixed(0),
+                      progress: walletData.analytics.riskScore * 100
+                    }
                   ].map((stat, idx) => (
                     <motion.div
                       key={idx}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="rounded-xl p-5 text-center"
-                      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                      className="rounded-xl p-4 sm:p-5"
+                      style={{ 
+                        backgroundColor: stat.isPrimary ? `${theme.primary}10` : theme.cardBg, 
+                        border: `1px solid ${stat.isPrimary ? theme.primary : theme.border}` 
+                      }}
                     >
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3"
-                        style={{ backgroundColor: `${stat.color}20` }}
-                      >
-                        <stat.icon size={24} style={{ color: stat.color }} />
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: `${theme.primary}20` }}
+                        >
+                          <stat.icon size={20} style={{ color: theme.primary }} />
+                        </div>
+                        <span className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</span>
                       </div>
-                      <p className="text-2xl font-bold text-white mb-1">
-                        {stat.value}
-                        {stat.suffix && <span className="text-sm ml-1" style={{ color: theme.textSecondary }}>{stat.suffix}</span>}
-                      </p>
-                      <p className="text-xs" style={{ color: theme.textSecondary }}>{stat.label}</p>
-                    </motion.div>
-                  ))}
-                </motion.div>
+                      <p className="text-2xl font-bold text-white mb-2">{stat.value}</p>
+                      
+                      {stat.change !== undefined && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span style={{ color: stat.change > 0 ? theme.success : theme.error }}>
+                            {stat.change > 0 ? <FaArrowUp className="inline" /> : <FaArrowDown className="inline" />}
+                            {' '}${Math.abs(stat.change).toFixed(2)}
+                          </span>
+                          <span style={{ color: stat.changePercent > 0 ? theme.success : theme.error }}>
+                            ({stat.changePercent > 0 ? '+' : ''}{stat.changePercent}%)
+                          </span>
+                        </div>
+                      )}
 
-                {/* Tasks List */}
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-white">Earn More AFRD</h2>
-                  {Object.values(taskDefinitions).map((task, index) => {
-                    const isCompleted = tasks[task.id]?.completed;
-                    const isProcessing = processingTask === task.id;
+                      {stat.subtext && (
+                        <p className="text-xs mt-2" style={{ color: theme.textSecondary }}>{stat.subtext}</p>
+                      )}
 
-                    return (
-                      <motion.div
-                        key={task.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={`rounded-xl p-6 ${isCompleted ? 'opacity-60' : ''}`}
-                        style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
-                      >
-                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
-                              style={{ backgroundColor: `${theme.primary}20` }}
-                            >
-                              <task.icon size={24} style={{ color: theme.primary }} />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-lg font-bold text-white mb-1">{task.title}</h3>
-                              <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>{task.description}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="text-2xl font-bold" style={{ color: theme.success }}>+{task.reward}</p>
-                              <p className="text-xs" style={{ color: theme.textSecondary }}>AFRD</p>
-                            </div>
-
-                            {isCompleted ? (
-                              <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-                                style={{ backgroundColor: `${theme.success}20`, color: theme.success }}
-                              >
-                                <FaCheckDouble />
-                                Done
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => completeTask(task.id)}
-                                disabled={isProcessing}
-                                className="px-6 py-3 rounded-lg font-semibold text-white disabled:opacity-50"
-                                style={{ backgroundColor: theme.primary }}
-                              >
-                                {isProcessing ? <FaSpinner className="animate-spin" /> : 'Earn'}
-                              </button>
-                            )}
+                      {stat.progress !== undefined && (
+                        <div className="mt-3">
+                          <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: `${theme.primary}20` }}>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${stat.progress}%` }}
+                              transition={{ duration: 1, delay: idx * 0.1 }}
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: theme.primary }}
+                            />
                           </div>
                         </div>
-                      </motion.div>
-                    );
-                  })}
+                      )}
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
+
+                {/* Tab Navigation */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  {[
+                    { id: 'overview', label: 'Overview', icon: FaChartLine },
+                    { id: 'holdings', label: 'Holdings', icon: FaLayerGroup },
+                    { id: 'insights', label: 'AI Insights', icon: FaBrain },
+                    { id: 'performance', label: 'Performance', icon: FaChartBar }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                        activeTab === tab.id ? 'text-white' : 'text-gray-400'
+                      }`}
+                      style={activeTab === tab.id ? { backgroundColor: theme.primary } : { backgroundColor: theme.cardBg }}
+                    >
+                      <tab.icon className="inline mr-2" size={14} />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Tab Content */}
+                <AnimatePresence mode="wait">
+                  {activeTab === 'overview' && (
+                    <motion.div
+                      key="overview"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-6"
+                    >
+                      {/* Charts Row */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Chain Distribution */}
+                        <div className="rounded-xl p-6" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}>
+                          <h3 className="text-lg font-bold text-white mb-4">Chain Distribution</h3>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                              <Pie
+                                data={chartData.chainDistribution}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={(entry) => `${entry.name} ${entry.percentage}%`}
+                                outerRadius={100}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {chartData.chainDistribution.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip content={<CustomTooltip />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Top Holdings */}
+                        <div className="rounded-xl p-6" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}>
+                          <h3 className="text-lg font-bold text-white mb-4">Top Holdings</h3>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={chartData.topHoldings}>
+                              <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
+                              <XAxis dataKey="name" stroke={theme.textSecondary} />
+                              <YAxis stroke={theme.textSecondary} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Bar dataKey="value" fill={theme.primary} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* P&L Chart */}
+                      {chartData.pnlData.length > 0 && (
+                        <div className="rounded-xl p-6" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}>
+                          <h3 className="text-lg font-bold text-white mb-4">Profit & Loss</h3>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={chartData.pnlData}>
+                              <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
+                              <XAxis dataKey="name" stroke={theme.textSecondary} />
+                              <YAxis stroke={theme.textSecondary} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Bar dataKey="profit" stackId="a" fill={theme.success} />
+                              <Bar dataKey="loss" stackId="a" fill={theme.error} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+
+                      {/* Radar Chart */}
+                      {aiInsights && chartData.radarData.length > 0 && (
+                        <div className="rounded-xl p-6" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}>
+                          <h3 className="text-lg font-bold text-white mb-4">Portfolio Health Radar</h3>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <RadarChart data={chartData.radarData}>
+                              <PolarGrid stroke={theme.border} />
+                              <PolarAngleAxis dataKey="metric" stroke={theme.textSecondary} />
+                              <PolarRadiusAxis stroke={theme.textSecondary} />
+                              <Radar name="Portfolio" dataKey="value" stroke={theme.primary} fill={theme.primary} fillOpacity={0.6} />
+                              <Tooltip content={<CustomTooltip />} />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'holdings' && (
+                    <motion.div
+                      key="holdings"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="rounded-xl p-6" 
+                      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                    >
+                      <h3 className="text-lg font-bold text-white mb-4">Token Holdings</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-left text-xs" style={{ color: theme.textSecondary }}>
+                              <th className="pb-3">Rank</th>
+                              <th className="pb-3">Token</th>
+                              <th className="pb-3">Balance</th>
+                              <th className="pb-3">Value (USD)</th>
+                              <th className="pb-3">Chain</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {walletData.analytics.topHoldings.slice(0, 20).map((token, idx) => (
+                              <tr key={idx} className="border-t" style={{ borderColor: theme.border }}>
+                                <td className="py-3 text-white">#{idx + 1}</td>
+                                <td className="py-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                      style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
+                                    >
+                                      {token.symbol.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <p className="text-white font-medium text-sm">{token.symbol}</p>
+                                      <p className="text-xs" style={{ color: theme.textSecondary }}>{token.name}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3 text-white">{parseFloat(token.balance).toFixed(4)}</td>
+                                <td className="py-3 text-white">${token.valueUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td className="py-3" style={{ color: theme.textSecondary }}>{token.chainName}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'insights' && aiInsights && (
+                    <motion.div
+                      key="insights"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-4"
+                    >
+                      <h3 className="text-lg font-bold text-white mb-4">AI Insights</h3>
+                      {aiInsights.insights && aiInsights.insights.map((insight, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => setSelectedInsight(selectedInsight === idx ? null : idx)}
+                          className="rounded-xl p-6 cursor-pointer transition-all"
+                          style={{ 
+                            backgroundColor: theme.cardBg, 
+                            border: `1px solid ${selectedInsight === idx ? theme.primary : theme.border}` 
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <FaLightbulb size={20} style={{ color: theme.primary }} />
+                                <h4 className="font-bold text-white">{insight.title}</h4>
+                                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: `${theme.info}20`, color: theme.info }}>
+                                  {insight.confidence}% confidence
+                                </span>
+                              </div>
+                              <p className="text-sm" style={{ color: theme.textSecondary }}>{insight.message}</p>
+                            </div>
+                            <FaChevronRight 
+                              className={`transition-transform ${selectedInsight === idx ? 'rotate-90' : ''}`}
+                              style={{ color: theme.textSecondary }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      {aiInsights.recommendations && aiInsights.recommendations.length > 0 && (
+                        <div className="mt-6">
+                          <h3 className="text-lg font-bold text-white mb-4">Smart Recommendations</h3>
+                          {aiInsights.recommendations.map((rec, idx) => (
+                            <div
+                              key={idx}
+                              className="rounded-xl p-6 mb-4"
+                              style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                            >
+                              <h4 className="font-bold text-white mb-2">{rec.title}</h4>
+                              <p className="text-sm mb-4" style={{ color: theme.textSecondary }}>{rec.description}</p>
+                              {rec.actions && rec.actions.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {rec.actions.map((action, aidx) => (
+                                    <button
+                                      key={aidx}
+                                      className="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                                      style={{ backgroundColor: theme.primary }}
+                                    >
+                                      {action}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'performance' && (
+                    <motion.div
+                      key="performance"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="rounded-xl p-6"
+                      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
+                    >
+                      <h3 className="text-lg font-bold text-white mb-4">Token Performance</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-left text-xs" style={{ color: theme.textSecondary }}>
+                              <th className="pb-3">Token</th>
+                              <th className="pb-3">Entry Price</th>
+                              <th className="pb-3">Current Price</th>
+                              <th className="pb-3">Unrealized P&L</th>
+                              <th className="pb-3">Total P&L</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.values(walletData.analytics.pnlData).slice(0, 15).map((token, idx) => (
+                              <tr key={idx} className="border-t" style={{ borderColor: theme.border }}>
+                                <td className="py-3">
+                                  <div>
+                                    <p className="text-white font-medium text-sm">{token.symbol}</p>
+                                    <p className="text-xs" style={{ color: theme.textSecondary }}>{token.name}</p>
+                                  </div>
+                                </td>
+                                <td className="py-3 text-white">${token.entryPrice.toFixed(4)}</td>
+                                <td className="py-3 text-white">${token.currentPrice.toFixed(4)}</td>
+                                <td className="py-3" style={{ color: token.unrealizedPnL >= 0 ? theme.success : theme.error }}>
+                                  {token.unrealizedPnL >= 0 ? '+' : ''}${token.unrealizedPnL.toFixed(2)}
+                                </td>
+                                <td className="py-3" style={{ color: token.totalPnL >= 0 ? theme.success : theme.error }}>
+                                  {token.totalPnL >= 0 ? '+' : ''}${token.totalPnL.toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
             )}
           </div>
         )}
       </main>
+
+      {/* AI Chat Sidebar */}
+      <AnimatePresence>
+        {showChat && walletParam && scanComplete && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed right-0 top-0 h-full w-full sm:w-[450px] z-50 flex flex-col"
+            style={{
+              backgroundColor: theme.cardBg,
+              borderLeft: `1px solid ${theme.border}`
+            }}
+          >
+            {/* Chat Header */}
+            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.border }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${theme.primary}20` }}
+                >
+                  <FaRobot size={20} style={{ color: theme.primary }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Alfredo AI</h3>
+                  <p className="text-xs" style={{ color: theme.textSecondary }}>Your Portfolio Analyst</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowChat(false)}
+                className="p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+              >
+                <FaTimes style={{ color: theme.textSecondary }} />
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {chatMessages.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-white font-medium mb-2">Ask Me Anything!</p>
+                  <p className="text-sm" style={{ color: theme.textSecondary }}>
+                    I can analyze your portfolio, explain risks, and suggest strategies.
+                  </p>
+                </div>
+              )}
+
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className="max-w-[80%] rounded-xl p-3"
+                    style={{
+                      backgroundColor: message.role === 'user' ? theme.primary : theme.cardBg,
+                      border: message.role === 'assistant' ? `1px solid ${theme.border}` : 'none'
+                    }}
+                  >
+                    {message.role === 'assistant' ? (
+                      <div className="text-sm text-white">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-white">{message.content}</div>
+                    )}
+                    <div className="text-xs mt-2 opacity-70">
+                      {message.timestamp}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="rounded-xl p-3" style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}>
+                    <div className="flex gap-2">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          animate={{ y: [0, -10, 0] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: theme.primary }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Chat Input */}
+            <div className="p-4 border-t" style={{ borderColor: theme.border }}>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                  placeholder="Ask about your portfolio..."
+                  disabled={isTyping}
+                  className="flex-1 px-4 py-3 rounded-xl text-white text-sm outline-none"
+                  style={{ 
+                    backgroundColor: theme.background, 
+                    border: `1px solid ${theme.border}`,
+                    opacity: isTyping ? 0.5 : 1 
+                  }}
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={!userInput.trim() || isTyping}
+                  className="px-4 py-3 rounded-xl text-white disabled:opacity-50"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  <FaPaperPlane size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1031,7 +1671,7 @@ export default function Page() {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
         <div className="text-center">
           <HiSparkles size={48} style={{ color: theme.primary }} className="animate-spin mx-auto mb-4" />
-          <p className="text-white">Loading...</p>
+          <p className="text-white">Loading Alfredo...</p>
         </div>
       </div>
     }>
