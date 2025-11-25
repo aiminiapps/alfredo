@@ -233,7 +233,7 @@ const useWallet = () => {
       const signature = await signer.signMessage(message);
 
       const response = await fetch('/api/reward', {
-        method: 'POST',
+        method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           address,
