@@ -1,5 +1,5 @@
 'use client'
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useRef } from 'react';
 import { FaUsers, FaVoteYea } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
