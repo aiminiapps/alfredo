@@ -1,7 +1,6 @@
 'use client'
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { FaExternalLinkAlt, FaFileAlt, FaCoins, FaLock, FaFire, FaShieldAlt } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
 import { BiNetworkChart } from 'react-icons/bi';
 
 const theme = {

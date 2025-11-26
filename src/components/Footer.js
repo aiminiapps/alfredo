@@ -1,9 +1,8 @@
 'use client'
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaExternalLinkAlt, FaEnvelope, FaFileAlt } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
 import { RiTwitterXLine } from "react-icons/ri";
 import { LiaTelegram } from "react-icons/lia";
 

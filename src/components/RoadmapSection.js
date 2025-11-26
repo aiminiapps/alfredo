@@ -1,6 +1,5 @@
-// components/RoadmapSection.jsx - Premium Animated Roadmap (Inspired by Reference)
 'use client'
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
 import { FaCircle } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
