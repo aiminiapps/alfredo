@@ -1,6 +1,5 @@
-// components/TaskCenterSection.jsx - Clean CTA Section (Inspired by Reference)
 'use client'
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Link from 'next/link';
 import { FaArrowRight } from 'react-icons/fa';
 
