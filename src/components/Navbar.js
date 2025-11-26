@@ -110,7 +110,7 @@ export default function Navbar() {
                 <div className="hidden md:flex items-center gap-2">
                   {/* Telegram */}
                   <motion.a
-                    href="https://t.me/alfredo_community"
+                    href="https://t.me/AI_UR_Alfredo"
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -2 }}
@@ -129,7 +129,7 @@ export default function Navbar() {
 
                   {/* Twitter/X */}
                   <motion.a
-                    href="https://twitter.com/Alfredo_AI"
+                    href="https://x.com/AI_UR_Alfredo"
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -2 }}
