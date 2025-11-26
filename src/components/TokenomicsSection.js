@@ -296,7 +296,7 @@ export default function TokenomicsSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <motion.a
-            href="https://bscscan.com"
+            href="https://bscscan.com/token/0x5defe90ace2cc2eb1a3a356dfdc56589bdb7ebcc"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.05, boxShadow: `0 20px 60px ${theme.primary}50` }}
@@ -311,7 +311,10 @@ export default function TokenomicsSection() {
             View Token on BscScan
           </motion.a>
 
-          <motion.button
+          <motion.a
+            href="https://alfredoai.gitbook.io/alfredoai-docs/"
+            target="_blank"
+            rel="noopener noreferrer"
             whileHover={{ 
               scale: 1.05,
               backgroundColor: `${theme.cardBg}`,
@@ -326,7 +329,7 @@ export default function TokenomicsSection() {
           >
             <FaFileAlt />
             Read Full Tokenomics
-          </motion.button>
+          </motion.a>
         </motion.div>
       </div>
     </section>
