@@ -95,7 +95,7 @@ export default function CommunitySection() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               {/* Telegram */}
               <motion.a
-                href="https://t.me/alfredo_community"
+                href="https://t.me/AI_UR_Alfredo"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05, boxShadow: `0 20px 60px ${theme.primary}50` }}
@@ -112,7 +112,7 @@ export default function CommunitySection() {
 
               {/* Twitter */}
               <motion.a
-                href="https://twitter.com/Alfredo_AI"
+                href="https://x.com/AI_UR_Alfredo"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ 
