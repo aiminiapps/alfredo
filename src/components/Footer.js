@@ -22,8 +22,8 @@ export default function Footer() {
       { label: 'Task Center', href: '/tasks' }
     ],
     resources: [
-      { label: 'Whitepaper', href: '#', icon: FaFileAlt },
-      { label: 'Token Tracker', href: 'https://bscscan.com', icon: FaExternalLinkAlt }
+      { label: 'Whitepaper', href: 'https://alfredoai.gitbook.io/alfredoai-docs/', icon: FaFileAlt },
+      { label: 'BSC Scan', href: 'https://bscscan.com/token/0x5defe90ace2cc2eb1a3a356dfdc56589bdb7ebcc', icon: FaExternalLinkAlt }
 
     ],
     community: [
