@@ -27,8 +27,8 @@ export default function Footer() {
 
     ],
     community: [
-      { label: 'X', href: 'https://twitter.com/Alfredo_AI', icon: RiTwitterXLine },
-      { label: 'Telegram', href: 'https://t.me/alfredo_community', icon: LiaTelegram }
+      { label: 'X', href: 'https://x.com/AI_UR_Alfredo', icon: RiTwitterXLine },
+      { label: 'Telegram', href: 'https://t.me/AI_UR_Alfredo', icon: LiaTelegram }
     ]
   };
 
