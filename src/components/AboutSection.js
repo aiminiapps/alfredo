@@ -1,13 +1,10 @@
-// components/AboutSection.jsx - Alfredo Premium About Section
 'use client'
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
-import { 
-  FaBrain, FaNetworkWired, FaChartLine, FaShieldAlt, 
+import {  FaNetworkWired, FaShieldAlt, 
   FaBolt, FaEye, FaCheckCircle
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
-import Image from 'next/image';
 
 const theme = {
   primary: '#FF8C00',

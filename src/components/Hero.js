@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { FaEthereum, FaChevronDown } from 'react-icons/fa';
 import { SiSolana, SiBinance, SiPolygon } from 'react-icons/si';
 import { TbHexagonLetterA, TbHexagonLetterB } from 'react-icons/tb';
