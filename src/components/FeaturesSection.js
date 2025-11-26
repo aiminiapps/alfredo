@@ -1,12 +1,10 @@
 'use client'
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
 import { HiSparkles } from 'react-icons/hi';
 import { 
-  FaWallet, FaChartLine, FaGift, FaShieldAlt, 
-  FaBrain, FaNetworkWired, FaBolt, FaRocket
+  FaWallet, FaChartLine, FaBrain
 } from 'react-icons/fa';
-import Image from 'next/image';
 
 const theme = {
   primary: '#FF8C00',
