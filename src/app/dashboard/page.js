@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast, Toaster } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { 

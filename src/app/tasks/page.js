@@ -1,12 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   FaTwitter, FaWallet, FaSpinner, FaCheckCircle, FaTelegram, 
   FaExternalLinkAlt, FaRetweet, FaComment, FaThumbsUp, FaCopy, 
   FaInfoCircle, FaGift, FaCoins, FaChartLine, 
-  FaTrophy, FaFire, FaShare, FaUsers, 
-  FaMobileAlt, FaCheckDouble, FaEye
+  FaTrophy, FaFire, FaShare, FaCheckDouble, FaEye
 } from 'react-icons/fa';
 import { TbTarget } from 'react-icons/tb';
 import { BiCoin, BiData, BiShield } from 'react-icons/bi';
